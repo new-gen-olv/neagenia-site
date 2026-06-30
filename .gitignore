@@ -1,0 +1,24 @@
+# Ευαίσθητα αρχεία / credentials — ΔΕΝ ανεβαίνουν στο GitHub
+Namecheap
+Proton mail & recovery Phrase
+Gmail - Main Mail
+SETUP-accounts.md
+
+# Docs & αρχεία εργασίας — δεν χρειάζονται στο repo
+neageniaolv-egxeiridio.docx
+neagenia-site-content.md
+newgen-olv-prompt.md
+SETUP.md
+files.zip
+
+# Custom domain (CNAME) — εκτός για production deploy
+# Αφαίρεσε αυτή τη γραμμή όταν είσαι έτοιμος για neageniaolv.org
+CNAME
+
+# Windows
+desktop.ini
+Thumbs.db
+
+# Firebase local
+.firebase/
+.firebaserc.local
