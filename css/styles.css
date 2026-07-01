@@ -360,6 +360,15 @@ section { padding: 80px 24px; }
 .footer-links a { display: block; font-size: 0.88rem; margin-bottom: 8px; transition: var(--transition); }
 .footer-links a:hover { color: var(--primary); }
 
+.footer-social { display: flex; gap: 10px; margin-top: 14px; }
+.footer-social a {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; margin-bottom: 0;
+  border-radius: 50%; background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.75); transition: var(--transition);
+}
+.footer-social a:hover { background: var(--primary); color: var(--white); }
+
 .footer-bottom {
   border-top: 1px solid rgba(255,255,255,0.1);
   margin-top: 36px; padding: 18px 0;
