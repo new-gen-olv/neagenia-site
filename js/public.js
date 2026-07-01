@@ -395,6 +395,29 @@ function showError(el, msg) { el.textContent = msg; el.style.display = 'block'; 
 function hideError(el) { el.style.display = 'none'; }
 function showSuccess(el) { el.style.display = 'block'; }
 
+// ===== AUTO-REPLY (η σελίδα απαντά αυτόματα στον επισκέπτη) =====
+// Στέλνεται από το Gmail της ομάδας μέσω EmailJS. Ενεργοποιείται μόλις
+// συμπληρωθεί το ID του auto-reply template από το EmailJS dashboard.
+const AUTOREPLY_TEMPLATE_ID = '';
+
+async function sendAutoReply(kind, name, email) {
+  if (!AUTOREPLY_TEMPLATE_ID) return;
+  const gr = currentLang !== 'en';
+  const auto_subject = kind === 'volunteer'
+    ? (gr ? 'Λάβαμε την αίτησή σου — Νέα Γενιά «Πράξις»' : 'We received your application — Nea Genia "Praxis"')
+    : (gr ? 'Λάβαμε το μήνυμά σου — Νέα Γενιά «Πράξις»' : 'We received your message — Nea Genia "Praxis"');
+  const auto_message = kind === 'volunteer'
+    ? (gr ? 'Ευχαριστούμε για το ενδιαφέρον σου να γίνεις μέλος της ομάδας μας! Λάβαμε τα στοιχεία σου και θα επικοινωνήσουμε σύντομα μαζί σου.'
+          : 'Thank you for your interest in joining our team! We received your details and will get in touch with you soon.')
+    : (gr ? 'Λάβαμε το μήνυμά σου και θα σου απαντήσουμε το συντομότερο δυνατό.'
+          : 'We received your message and will reply as soon as possible.');
+  try {
+    await window.emailjs.send('service_orzkyoc', AUTOREPLY_TEMPLATE_ID, {
+      email, name, auto_subject, auto_message
+    });
+  } catch { /* silent — δεν επηρεάζει τον επισκέπτη */ }
+}
+
 // ===== CONTACT FORM =====
 document.getElementById('contactForm').addEventListener('submit', async e => {
   e.preventDefault();
@@ -423,6 +446,7 @@ document.getElementById('contactForm').addEventListener('submit', async e => {
         phone: '', interests: ''
       });
     } catch { /* silent */ }
+    sendAutoReply('contact', name, email);
     showSuccess(sucEl);
     form.reset();
   } catch {
@@ -464,6 +488,7 @@ document.getElementById('volunteerForm').addEventListener('submit', async e => {
         message: message || ''
       });
     } catch { /* silent */ }
+    sendAutoReply('volunteer', name, email);
     showSuccess(sucEl);
     form.reset();
   } catch {
