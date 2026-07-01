@@ -398,7 +398,7 @@ function showSuccess(el) { el.style.display = 'block'; }
 // ===== AUTO-REPLY (η σελίδα απαντά αυτόματα στον επισκέπτη) =====
 // Στέλνεται από το Gmail της ομάδας μέσω EmailJS. Ενεργοποιείται μόλις
 // συμπληρωθεί το ID του auto-reply template από το EmailJS dashboard.
-const AUTOREPLY_TEMPLATE_ID = '';
+const AUTOREPLY_TEMPLATE_ID = 'template_6mpy8yq';
 
 async function sendAutoReply(kind, name, email) {
   if (!AUTOREPLY_TEMPLATE_ID) return;
