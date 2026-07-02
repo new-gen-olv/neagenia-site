@@ -7,8 +7,34 @@
   <meta name="description" content="Εθελοντική ομάδα στο Ολυμπιακό Χωριό Αθηνών. Φροντίζουμε τον τόπο μας, στηρίζουμε τους ανθρώπους του, χτίζουμε ένα καλύτερο μέλλον." />
   <meta property="og:title" content="Νέα Γενιά «Πράξις» — Ολυμπιακού Χωριού" />
   <meta property="og:description" content="Εθελοντισμός, δράση, κοινότητα στο Ολυμπιακό Χωριό." />
-  <meta property="og:image" content="Assets/Images/background.jpg" />
+  <meta property="og:site_name" content="Nea Genia Praxis" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://neageniaolv.org/" />
+  <meta property="og:image" content="https://neageniaolv.org/Assets/Images/background.jpg" />
   <link rel="icon" href="Assets/Images/logo.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "NGO",
+    "name": "Νέα Γενιά «Πράξις» Ολυμπιακού Χωριού",
+    "alternateName": "Nea Genia Praxis",
+    "url": "https://neageniaolv.org/",
+    "logo": "https://neageniaolv.org/Assets/Images/logo.png",
+    "email": "neageniaox@gmail.com",
+    "telephone": "+30 694 393 8884",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Κωνσταντίνου Κεντέρη 11",
+      "addressLocality": "Αχαρνές",
+      "addressCountry": "GR"
+    },
+    "sameAs": [
+      "https://www.facebook.com/NeaGeniaPraxis",
+      "https://www.instagram.com/olympic_village_of_athens/",
+      "https://www.tiktok.com/@neageniapraxis"
+    ]
+  }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet" />
@@ -28,7 +54,9 @@
     <a href="#news" data-i18n="nav_articles">Άρθρα</a>
     <a href="#gallery" data-i18n="nav_gallery">Gallery</a>
     <a href="#about" data-i18n="nav_about">Σχετικά</a>
+    <a href="#volunteerForm" data-i18n="nav_join">Γίνε μέλος</a>
     <a href="#contact" data-i18n="nav_contact">Επικοινωνία</a>
+    <a href="#donate" class="nav-donate" data-i18n="nav_donate">❤ Δωρεά</a>
   </nav>
   <div class="nav-actions">
     <button class="lang-toggle" id="langToggle" aria-label="Εναλλαγή γλώσσας">EN</button>
@@ -45,7 +73,9 @@
   <a href="#news" data-i18n="nav_articles">Άρθρα</a>
   <a href="#gallery" data-i18n="nav_gallery">Gallery</a>
   <a href="#about" data-i18n="nav_about">Σχετικά</a>
+  <a href="#volunteerForm" data-i18n="nav_join">Γίνε μέλος</a>
   <a href="#contact" data-i18n="nav_contact">Επικοινωνία</a>
+  <a href="#donate" class="nav-donate" data-i18n="nav_donate">❤ Δωρεά</a>
   <div class="mobile-nav-lang">
     <button class="lang-toggle" id="langToggleMobile" aria-label="Εναλλαγή γλώσσας">EN</button>
   </div>
@@ -139,6 +169,37 @@
       </div>
       <div class="about-logo-wrap">
         <img src="Assets/Images/logo.png" alt="Νέα Γενιά Πράξις Logo" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ΔΩΡΕΑ ===== -->
+<section id="donate">
+  <div class="section-inner">
+    <h2 class="section-title" data-i18n="donate_section_title">Στήριξε τη <span>δράση μας</span></h2>
+    <div class="section-divider"></div>
+    <div class="donate-box">
+      <p class="donate-sub" data-i18n="donate_sub">Κάθε δωρεά, μικρή ή μεγάλη, μας βοηθά να συνεχίσουμε το έργο μας για τη γειτονιά. Η κατάθεση γίνεται απευθείας στον τραπεζικό λογαριασμό της ομάδας, μέσω e-banking ή σε κατάστημα της τράπεζάς σας.</p>
+
+      <div class="donate-iban-wrap">
+        <div class="donate-iban-label">
+          <span data-i18n="donate_bank">Τράπεζα Πειραιώς</span> · IBAN
+        </div>
+        <div class="donate-iban-row">
+          <code id="donateIban">GR58 0171 0420 0060 4214 5997 905</code>
+          <button type="button" class="btn btn-primary" id="btnCopyIban" data-i18n="donate_copy">📋 Αντιγραφή IBAN</button>
+        </div>
+      </div>
+
+      <div class="donate-note">
+        <p><strong data-i18n="donate_note_title">Παρακαλούμε, στην αιτιολογία της κατάθεσης να αναγράφετε:</strong></p>
+        <ul>
+          <li data-i18n="donate_note_1">«Δωρεά στη Νέα Γενιά Πράξις Ολυμπιακού Χωριού»</li>
+          <li data-i18n="donate_note_2">Το ονοματεπώνυμό σας</li>
+          <li data-i18n="donate_note_3">Την ημερομηνία της κατάθεσης</li>
+        </ul>
+        <p class="donate-note-footer" data-i18n="donate_note_footer">Τα στοιχεία αυτά διευκολύνουν την ταυτοποίηση και την ορθή καταγραφή της δωρεάς από την ομάδα. Σας ευχαριστούμε θερμά! ❤</p>
       </div>
     </div>
   </div>
@@ -238,7 +299,7 @@
       <h4 data-i18n="footer_contact_title">Επικοινωνία</h4>
       <p>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        Κωνσταντίνου Κεντέρη 11, Αχαρνές
+        <a href="https://www.google.com/maps/search/?api=1&query=%CE%9A%CF%89%CE%BD%CF%83%CF%84%CE%B1%CE%BD%CF%84%CE%AF%CE%BD%CE%BF%CF%85+%CE%9A%CE%B5%CE%BD%CF%84%CE%AD%CF%81%CE%B7+11%2C+%CE%91%CF%87%CE%B1%CF%81%CE%BD%CE%AD%CF%82" target="_blank" rel="noopener" title="Άνοιγμα στο Google Maps">Κωνσταντίνου Κεντέρη 11, Αχαρνές</a>
       </p>
       <p>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 8.91A16 16 0 0 0 15 15.91l.75-.75a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 17.19z"/></svg>
@@ -246,7 +307,11 @@
       </p>
       <p>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        neageniaox@gmail.com
+        <a href="mailto:neageniaox@gmail.com">neageniaox@gmail.com</a>
+      </p>
+      <p>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <a href="mailto:newgen.olv@gmail.com">newgen.olv@gmail.com</a>
       </p>
     </div>
     <div class="footer-links">
@@ -272,7 +337,7 @@
   </div>
   <div class="subfooter">
     <img src="Assets/Images/dg-creative-studio.png" alt="DG Creative Studio" />
-    <span>Created with ❤ by DG Creative Studio &middot; &copy; 2026</span>
+    <span>Created with ❤ by DG Creative Studio &middot; <a href="mailto:DG.creative.studio@proton.me">DG.creative.studio@proton.me</a> &middot; &copy; 2026</span>
   </div>
 </footer>
 

@@ -16,6 +16,18 @@ const translations = {
     nav_gallery: 'Gallery',
     nav_about: 'Σχετικά',
     nav_contact: 'Επικοινωνία',
+    nav_join: 'Γίνε μέλος',
+    nav_donate: '❤ Δωρεά',
+    donate_section_title: 'Στήριξε τη <span>δράση μας</span>',
+    donate_sub: 'Κάθε δωρεά, μικρή ή μεγάλη, μας βοηθά να συνεχίσουμε το έργο μας για τη γειτονιά. Η κατάθεση γίνεται απευθείας στον τραπεζικό λογαριασμό της ομάδας, μέσω e-banking ή σε κατάστημα της τράπεζάς σας.',
+    donate_bank: 'Τράπεζα Πειραιώς',
+    donate_copy: '📋 Αντιγραφή IBAN',
+    donate_copied: '✓ Αντιγράφηκε!',
+    donate_note_title: 'Παρακαλούμε, στην αιτιολογία της κατάθεσης να αναγράφετε:',
+    donate_note_1: '«Δωρεά στη Νέα Γενιά Πράξις Ολυμπιακού Χωριού»',
+    donate_note_2: 'Το ονοματεπώνυμό σας',
+    donate_note_3: 'Την ημερομηνία της κατάθεσης',
+    donate_note_footer: 'Τα στοιχεία αυτά διευκολύνουν την ταυτοποίηση και την ορθή καταγραφή της δωρεάς από την ομάδα. Σας ευχαριστούμε θερμά! ❤',
     btn_volunteer: 'Γίνε εθελοντής',
     btn_see_actions: 'Δες τις δράσεις μας',
     btn_send: 'Αποστολή',
@@ -72,10 +84,22 @@ const translations = {
     nav_gallery: 'Gallery',
     nav_about: 'About',
     nav_contact: 'Contact',
+    nav_join: 'Join us',
+    nav_donate: '❤ Donate',
+    donate_section_title: 'Support <span>our work</span>',
+    donate_sub: 'Every donation, big or small, helps us continue our work for the neighbourhood. Deposits are made directly to the team\'s bank account, via e-banking or at your bank\'s branch.',
+    donate_bank: 'Piraeus Bank',
+    donate_copy: '📋 Copy IBAN',
+    donate_copied: '✓ Copied!',
+    donate_note_title: 'When making the deposit, please include in the payment reference:',
+    donate_note_1: '"Donation to Nea Genia Praxis of Olympic Village"',
+    donate_note_2: 'Your full name',
+    donate_note_3: 'The date of the deposit',
+    donate_note_footer: 'These details help us identify and properly record your donation. Thank you very much! ❤',
     btn_volunteer: 'Become a volunteer',
     btn_see_actions: 'See our actions',
     btn_send: 'Send',
-    hero_title: 'A New Generation in the <span>Olympic Village</span>',
+    hero_title: '«Nea Genia» in the <span>Olympic Village</span>',
     hero_subtitle: 'A group of young people changing mindsets through volunteering. We care for our place, support its people, and build a better future, together.',
     problem_title: 'A place that deserves <span>more</span>',
     problem_p1: 'The Olympic Village was designed as a model space for life and community. Today, many of the spaces that should be full of life (club spaces, common areas, neighborhood facilities) remain closed or abandoned.',
@@ -127,6 +151,7 @@ const CAT_LABELS = {
   'Δημόσιος χώρος': { el: 'Δημόσιος χώρος', en: 'Public space' },
   'Μαθήματα':              { el: 'Μαθήματα', en: 'Lessons' },
   'Πολιτισμός':  { el: 'Πολιτισμός', en: 'Culture' },
+  'Αλληλεγγύη':  { el: 'Αλληλεγγύη', en: 'Solidarity' },
 };
 function catLabel(cat) { return (CAT_LABELS[cat] || {})[currentLang] || cat; }
 
@@ -196,9 +221,14 @@ let cachedActions = null;
 // ===== ACTIONS — render =====
 function renderActionCard(d) {
   const title = currentLang === 'el' ? d.titleEl : (d.titleEn || d.titleEl);
-  const desc  = currentLang === 'el' ? d.descEl  : (d.descEn  || d.descEl);
+  const fullDesc = currentLang === 'el' ? d.descEl : (d.descEn || d.descEl);
   const cat   = catLabel(d.category || '');
   const styleAttr = d.imageStyle ? ` style="${d.imageStyle}"` : '';
+
+  // Προεπισκόπηση: αν το κείμενο είναι μεγάλο, κόβεται + «Διάβασε περισσότερα»
+  const isLong = (fullDesc || '').length > 140;
+  const desc = isLong ? fullDesc.slice(0, 140) + '…' : (fullDesc || '');
+  const readMore = currentLang === 'el' ? 'Διάβασε περισσότερα →' : 'Read more →';
 
   const mediaHtml = d.imageUrl
     ? `<div class="action-card-img"><img src="${d.imageUrl}" alt="${title}" loading="lazy"${styleAttr} /></div>`
@@ -206,15 +236,23 @@ function renderActionCard(d) {
 
   const iconHtml = d.imageUrl && d.icon ? `<span class="icon">${d.icon}</span>` : '';
 
-  return `<div class="action-card">
+  const card = `<div class="action-card">
     ${mediaHtml}
     <div class="action-card-body">
       ${iconHtml}
       <h3>${title}</h3>
       <p>${desc}</p>
+      ${d.id && isLong ? `<span class="read-more-label">${readMore}</span>` : ''}
       <span class="tag">${cat}</span>
     </div>
   </div>`;
+
+  // Δράσεις από τη βάση (με id) ανοίγουν τη δική τους σελίδα σε νέο παράθυρο
+  if (d.id) {
+    const url = `action.html?id=${d.id}${currentLang === 'en' ? '&lang=en' : ''}`;
+    return `<a href="${url}" target="_blank" rel="noopener" class="action-card-link">${card}</a>`;
+  }
+  return card;
 }
 
 function renderActions() {
@@ -233,7 +271,7 @@ async function loadActions() {
       limit(20)
     );
     const snap = await getDocs(q);
-    cachedActions = snap.empty ? SEED_ACTIONS : snap.docs.map(d => d.data());
+    cachedActions = snap.empty ? SEED_ACTIONS : snap.docs.map(d => ({ id: d.id, ...d.data() }));
   } catch {
     cachedActions = SEED_ACTIONS;
   }
@@ -389,6 +427,36 @@ document.getElementById('lightboxClose').addEventListener('click', () => lightbo
 lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.classList.remove('open'); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') lightbox.classList.remove('open'); });
 
+// ===== ΔΩΡΕΑ — αντιγραφή IBAN =====
+const IBAN = 'GR5801710420006042145997905';
+const btnCopyIban = document.getElementById('btnCopyIban');
+if (btnCopyIban) {
+  btnCopyIban.addEventListener('click', async () => {
+    let ok = false;
+    try {
+      await navigator.clipboard.writeText(IBAN);
+      ok = true;
+    } catch {
+      // Fallback για παλιούς browsers / http
+      const ta = document.createElement('textarea');
+      ta.value = IBAN;
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { ok = document.execCommand('copy'); } catch {}
+      document.body.removeChild(ta);
+    }
+    if (ok) {
+      btnCopyIban.textContent = translations[currentLang].donate_copied;
+      btnCopyIban.classList.add('copied');
+      setTimeout(() => {
+        btnCopyIban.textContent = translations[currentLang].donate_copy;
+        btnCopyIban.classList.remove('copied');
+      }, 2500);
+    }
+  });
+}
+
 // ===== FORM HELPERS =====
 function isValidEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 function showError(el, msg) { el.textContent = msg; el.style.display = 'block'; }
@@ -404,8 +472,8 @@ async function sendAutoReply(kind, name, email) {
   if (!AUTOREPLY_TEMPLATE_ID) return;
   const gr = currentLang !== 'en';
   const auto_subject = kind === 'volunteer'
-    ? (gr ? 'Λάβαμε την αίτησή σου — Νέα Γενιά «Πράξις»' : 'We received your application — Nea Genia "Praxis"')
-    : (gr ? 'Λάβαμε το μήνυμά σου — Νέα Γενιά «Πράξις»' : 'We received your message — Nea Genia "Praxis"');
+    ? (gr ? 'Νέα Γενιά «Πράξις»: Λάβαμε την αίτησή σου' : 'Nea Genia "Praxis": We received your application')
+    : (gr ? 'Νέα Γενιά «Πράξις»: Λάβαμε το μήνυμά σου' : 'Nea Genia "Praxis": We received your message');
   const auto_message = kind === 'volunteer'
     ? (gr ? 'Ευχαριστούμε για το ενδιαφέρον σου να γίνεις μέλος της ομάδας μας! Λάβαμε τα στοιχεία σου και θα επικοινωνήσουμε σύντομα μαζί σου.'
           : 'Thank you for your interest in joining our team! We received your details and will get in touch with you soon.')

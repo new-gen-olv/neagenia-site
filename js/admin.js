@@ -15,7 +15,9 @@ let currentRole = null; // 'admin' | 'author'
 let editingArticleId = null;
 let editingAnnId = null;
 let editingActionId = null;
-let editingActionImageUrl = '';
+let editingActionImages = [];   // υπάρχουσες φωτό (URLs) της δράσης που επεξεργαζόμαστε
+let pendingActionFiles = [];    // νέα αρχεία προς ανέβασμα (μαζί max 4)
+const MAX_ACTION_PHOTOS = 4;
 
 // ===== AUTH GUARD =====
 onAuthStateChanged(auth, async user => {
@@ -59,10 +61,35 @@ function initTabs() {
     document.querySelectorAll('.tab-item, .admin-tabs-mobile button').forEach(t => t.classList.remove('active'));
     document.getElementById('panel-' + panel)?.classList.add('active');
     document.querySelectorAll(`[data-panel="${panel}"]`).forEach(t => t.classList.add('active'));
+    if (panel === 'volunteers' || panel === 'messages') markTabRead(panel);
   };
   document.querySelectorAll('[data-panel]').forEach(el => {
     el.addEventListener('click', () => switchTo(el.dataset.panel));
   });
+}
+
+// ===== BADGES / ΑΔΙΑΒΑΣΤΑ =====
+// Νέες υποβολές (χωρίς read:true) εμφανίζουν badge στο tab· μόλις ο admin
+// ανοίξει το tab, μαρκάρονται read και το badge σβήνει.
+let unreadIds = { volunteers: [], messages: [] };
+
+function setBadge(name, count) {
+  document.querySelectorAll(`[data-badge="${name}"]`).forEach(b => {
+    b.textContent = count;
+    b.style.display = count > 0 ? 'inline-block' : 'none';
+  });
+}
+
+async function markTabRead(panel) {
+  if (currentRole !== 'admin') return;
+  const ids = unreadIds[panel];
+  if (!ids || !ids.length) return;
+  const colName = panel === 'volunteers' ? 'volunteers' : 'contactMessages';
+  const toMark = ids.splice(0);
+  setBadge(panel, 0);
+  await Promise.all(toMark.map(id =>
+    updateDoc(doc(db, colName, id), { read: true }).catch(() => {})
+  ));
 }
 
 // ===== HELPERS =====
@@ -148,8 +175,7 @@ async function loadPending() {
 
   el.innerHTML = html || '<p style="color:#888;">Δεν υπάρχουν εκκρεμότητες.</p>';
 
-  const badge = document.getElementById('pendingBadge');
-  if (count > 0) { badge.textContent = count; badge.style.display = 'inline-block'; }
+  setBadge('pending', count);
 
   el.querySelectorAll('[data-approve]').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -415,25 +441,57 @@ document.getElementById('btnSubmitGallery').addEventListener('click', async () =
 });
 
 // ===== VOLUNTEERS (admin only) =====
+// Το κλικ στο email ανοίγει Gmail compose με τον λογαριασμό της ΟΜΑΔΑΣ,
+// ώστε η απάντηση να φεύγει πάντα ως «Νέα Γενιά Πράξις» (όχι προσωπικό email).
+// Με έτοιμο θέμα + κείμενο, όπως το auto-reply — ο admin συμπληρώνει μόνο την ουσία.
+function gmailComposeUrl(to, name, kind) {
+  const subject = 'Απάντηση από τη Νέα Γενιά «Πράξις» Ολυμπιακού Χωριού';
+  const thanks = kind === 'volunteer'
+    ? 'Ευχαριστούμε θερμά για το ενδιαφέρον σου να γίνεις μέλος της ομάδας μας!'
+    : 'Ευχαριστούμε για το μήνυμά σου!';
+  const body =
+`Γεια σου ${name || ''},
+
+${thanks}
+
+[γράψτε εδώ την απάντησή σας]
+
+Με εκτίμηση,
+Νέα Γενιά «Πράξις» Ολυμπιακού Χωριού
+Κωνσταντίνου Κεντέρη 11, Αχαρνές · Τηλ: +30 694 393 8884`;
+  return `https://mail.google.com/mail/?authuser=newgen.olv@gmail.com&view=cm&fs=1`
+    + `&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 async function loadVolunteers() {
   const el = document.getElementById('volunteersList');
   const q = query(collection(db, 'volunteers'), orderBy('createdAt', 'desc'), limit(100));
   const snap = await getDocs(q);
+  unreadIds.volunteers = snap.docs.filter(d => !d.data().read).map(d => d.id);
+  setBadge('volunteers', unreadIds.volunteers.length);
   if (snap.empty) { el.innerHTML = '<p style="color:#888;">Δεν υπάρχουν εγγραφές εθελοντών.</p>'; return; }
   el.innerHTML = `<table class="content-table">
-    <thead><tr><th>Όνομα</th><th>Email</th><th>Τηλέφωνο</th><th>Ενδιαφέροντα</th><th>Μήνυμα</th><th>Ημ/νία</th></tr></thead>
+    <thead><tr><th>Όνομα</th><th>Email</th><th>Τηλέφωνο</th><th>Ενδιαφέροντα</th><th>Μήνυμα</th><th>Ημ/νία</th><th></th></tr></thead>
     <tbody>${snap.docs.map(d => {
       const v = d.data();
-      return `<tr>
-        <td><strong>${v.name}</strong></td>
-        <td><a href="mailto:${v.email}" style="color:var(--blue);">${v.email}</a></td>
+      return `<tr${!v.read ? ' style="background:#fff7e6;"' : ''}>
+        <td>${!v.read ? '<span style="color:var(--red);">●</span> ' : ''}<strong>${v.name}</strong></td>
+        <td><a href="${gmailComposeUrl(v.email, v.name, 'volunteer')}" target="_blank" rel="noopener" title="Απάντηση από το Gmail της ομάδας" style="color:var(--blue);">${v.email}</a></td>
         <td>${v.phone || '—'}</td>
         <td style="font-size:0.8rem;">${(v.interests || []).join(', ') || '—'}</td>
         <td style="font-size:0.82rem;color:#555;max-width:200px;">${v.message || '—'}</td>
         <td style="font-size:0.78rem;color:#888;">${fmt(v.createdAt)}</td>
+        <td><button class="btn btn-sm btn-danger" data-del-vol="${d.id}" title="Διαγραφή">🗑</button></td>
       </tr>`;
     }).join('')}</tbody>
   </table>`;
+
+  el.querySelectorAll('[data-del-vol]').forEach(btn => btn.addEventListener('click', async () => {
+    if (confirm('Διαγραφή αυτής της εγγραφής εθελοντή; Δεν αναιρείται.')) {
+      await deleteDoc(doc(db, 'volunteers', btn.dataset.delVol));
+      loadVolunteers();
+    }
+  }));
 }
 
 // ===== MESSAGES (admin only) =====
@@ -441,19 +499,29 @@ async function loadMessages() {
   const el = document.getElementById('messagesList');
   const q = query(collection(db, 'contactMessages'), orderBy('createdAt', 'desc'), limit(100));
   const snap = await getDocs(q);
+  unreadIds.messages = snap.docs.filter(d => !d.data().read).map(d => d.id);
+  setBadge('messages', unreadIds.messages.length);
   if (snap.empty) { el.innerHTML = '<p style="color:#888;">Δεν υπάρχουν μηνύματα.</p>'; return; }
   el.innerHTML = `<table class="content-table">
-    <thead><tr><th>Όνομα</th><th>Email</th><th>Μήνυμα</th><th>Ημ/νία</th></tr></thead>
+    <thead><tr><th>Όνομα</th><th>Email</th><th>Μήνυμα</th><th>Ημ/νία</th><th></th></tr></thead>
     <tbody>${snap.docs.map(d => {
       const m = d.data();
-      return `<tr>
-        <td><strong>${m.name}</strong></td>
-        <td><a href="mailto:${m.email}" style="color:var(--blue);">${m.email}</a></td>
+      return `<tr${!m.read ? ' style="background:#fff7e6;"' : ''}>
+        <td>${!m.read ? '<span style="color:var(--red);">●</span> ' : ''}<strong>${m.name}</strong></td>
+        <td><a href="${gmailComposeUrl(m.email, m.name, 'contact')}" target="_blank" rel="noopener" title="Απάντηση από το Gmail της ομάδας" style="color:var(--blue);">${m.email}</a></td>
         <td style="font-size:0.88rem;max-width:280px;">${m.message}</td>
         <td style="font-size:0.78rem;color:#888;">${fmt(m.createdAt)}</td>
+        <td><button class="btn btn-sm btn-danger" data-del-msg="${d.id}" title="Διαγραφή">🗑</button></td>
       </tr>`;
     }).join('')}</tbody>
   </table>`;
+
+  el.querySelectorAll('[data-del-msg]').forEach(btn => btn.addEventListener('click', async () => {
+    if (confirm('Διαγραφή αυτού του μηνύματος; Δεν αναιρείται.')) {
+      await deleteDoc(doc(db, 'contactMessages', btn.dataset.delMsg));
+      loadMessages();
+    }
+  }));
 }
 
 // ===== MEMBERS (admin only) =====
@@ -536,7 +604,7 @@ async function loadMembers() {
       : `<select data-uid="${d.id}" data-current="${u.role}" class="role-select" style="padding:5px 8px;border-radius:6px;border:1px solid #ddd;font-family:var(--font);font-size:0.82rem;">
            <option value="admin"  ${u.role === 'admin'  ? 'selected' : ''}>admin</option>
            <option value="author" ${u.role === 'author' ? 'selected' : ''}>author</option>
-           <option value="none"   ${!['admin','author'].includes(u.role) ? 'selected' : ''}>— αφαίρεση πρόσβασης</option>
+           <option value="none"   ${!['admin','author'].includes(u.role) ? 'selected' : ''}>αφαίρεση πρόσβασης</option>
          </select>`;
 
     return `<tr>
@@ -611,11 +679,11 @@ async function loadMembers() {
       errEl.textContent = 'Μη έγκυρο email.'; errEl.style.display = 'block'; return;
     }
     if (role === 'admin' && adminCount >= MAX_ADMINS) {
-      errEl.textContent = `Όριο admins (${MAX_ADMINS}) συμπληρώθηκε — ενεργά + εκκρεμείς.`;
+      errEl.textContent = `Όριο admins (${MAX_ADMINS}) συμπληρώθηκε (ενεργά και εκκρεμείς).`;
       errEl.style.display = 'block'; return;
     }
     if (role === 'author' && authorCount >= MAX_AUTHORS) {
-      errEl.textContent = `Όριο authors (${MAX_AUTHORS}) συμπληρώθηκε — ενεργά + εκκρεμείς.`;
+      errEl.textContent = `Όριο authors (${MAX_AUTHORS}) συμπληρώθηκε (ενεργά και εκκρεμείς).`;
       errEl.style.display = 'block'; return;
     }
     if (usersSnap.docs.some(d => (d.data().email || '').toLowerCase() === email)) {
@@ -648,7 +716,60 @@ async function loadMembers() {
 }
 
 // ===== ACTIONS =====
-setupUploadArea('actionUploadArea', 'actionImageFile', 'actionImagePreview', 'actionUploadStatus');
+// ===== ΔΡΑΣΕΙΣ: multi-upload έως 4 φωτογραφίες =====
+function renderActionImagesStrip() {
+  const strip = document.getElementById('actionImagesStrip');
+  if (!strip) return;
+  const thumb = (src, label, removeAttr, idx) => `
+    <div style="position:relative;width:90px;">
+      <img src="${src}" style="width:90px;height:70px;object-fit:cover;border-radius:8px;border:2px solid ${idx === 0 ? 'var(--primary)' : '#ddd'};" />
+      ${idx === 0 ? '<span style="position:absolute;bottom:2px;left:4px;font-size:0.6rem;background:var(--primary);color:#fff;border-radius:4px;padding:0 4px;">κύρια</span>' : ''}
+      <button type="button" ${removeAttr} title="Αφαίρεση"
+        style="position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;border:none;background:#E04A3F;color:#fff;font-size:0.75rem;cursor:pointer;line-height:1;">×</button>
+    </div>`;
+  let idx = 0;
+  const existing = editingActionImages.map((url, i) => thumb(url, '', `data-rm-url="${i}"`, idx++));
+  const pending  = pendingActionFiles.map((f, i) => thumb(f._previewUrl || '', '', `data-rm-file="${i}"`, idx++));
+  strip.innerHTML = existing.join('') + pending.join('');
+
+  strip.querySelectorAll('[data-rm-url]').forEach(b => b.addEventListener('click', () => {
+    editingActionImages.splice(parseInt(b.dataset.rmUrl), 1); renderActionImagesStrip();
+  }));
+  strip.querySelectorAll('[data-rm-file]').forEach(b => b.addEventListener('click', () => {
+    pendingActionFiles.splice(parseInt(b.dataset.rmFile), 1); renderActionImagesStrip();
+  }));
+}
+
+function addActionFiles(fileList) {
+  const status = document.getElementById('actionUploadStatus');
+  status.textContent = '';
+  for (const file of fileList) {
+    if (editingActionImages.length + pendingActionFiles.length >= MAX_ACTION_PHOTOS) {
+      status.textContent = `Έως ${MAX_ACTION_PHOTOS} φωτογραφίες ανά δράση.`; break;
+    }
+    if (!file.type.startsWith('image/')) { status.textContent = 'Μόνο εικόνες επιτρέπονται.'; continue; }
+    if (file.size > 5 * 1024 * 1024) { status.textContent = 'Μέγιστο 5MB ανά εικόνα.'; continue; }
+    const reader = new FileReader();
+    reader.onload = e => { file._previewUrl = e.target.result; renderActionImagesStrip(); };
+    reader.readAsDataURL(file);
+    pendingActionFiles.push(file);
+  }
+  renderActionImagesStrip();
+}
+
+(function setupActionUploads() {
+  const area = document.getElementById('actionUploadArea');
+  const input = document.getElementById('actionImageFile');
+  if (!area || !input) return;
+  area.addEventListener('click', () => input.click());
+  area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('drag-over'); });
+  area.addEventListener('dragleave', () => area.classList.remove('drag-over'));
+  area.addEventListener('drop', e => {
+    e.preventDefault(); area.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) addActionFiles(e.dataTransfer.files);
+  });
+  input.addEventListener('change', () => { addActionFiles(input.files); input.value = ''; });
+})();
 
 async function loadActionsAdmin() {
   const el = document.getElementById('actionsList');
@@ -697,25 +818,29 @@ async function startEditAction(id) {
   document.getElementById('actionCategory').value = d.category || 'Δημόσιος χώρος';
   document.getElementById('actionIcon').value = d.icon || '';
   document.getElementById('actionOrder').value = d.order || 10;
+  document.getElementById('actionSocialUrl').value = d.socialUrl || '';
   document.getElementById('actionFormTitle').textContent = 'Επεξεργασία Δράσης';
   document.getElementById('btnCancelAction').style.display = 'inline-block';
   editingActionId = id;
-  editingActionImageUrl = d.imageUrl || '';
+  editingActionImages = d.images && d.images.length ? [...d.images] : (d.imageUrl ? [d.imageUrl] : []);
+  pendingActionFiles = [];
+  renderActionImagesStrip();
   document.getElementById('panel-actions').scrollIntoView({ behavior: 'smooth' });
 }
 
 document.getElementById('btnCancelAction').addEventListener('click', () => {
   editingActionId = null;
-  editingActionImageUrl = '';
-  ['actionTitleEl','actionTitleEn','actionDescEl','actionDescEn','actionIcon'].forEach(id => document.getElementById(id).value = '');
+  editingActionImages = [];
+  pendingActionFiles = [];
+  ['actionTitleEl','actionTitleEn','actionDescEl','actionDescEn','actionIcon','actionSocialUrl'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('actionCategory').value = 'Δημόσιος χώρος';
   document.getElementById('actionOrder').value = 10;
   document.getElementById('actionFormTitle').textContent = 'Νέα Δράση';
   document.getElementById('btnCancelAction').style.display = 'none';
   document.getElementById('actionError').style.display = 'none';
-  document.getElementById('actionImagePreview').classList.add('hidden');
   document.getElementById('actionUploadStatus').textContent = '';
   document.getElementById('actionImageFile').value = '';
+  renderActionImagesStrip();
 });
 
 document.getElementById('btnSubmitAction').addEventListener('click', async () => {
@@ -738,15 +863,22 @@ document.getElementById('btnSubmitAction').addEventListener('click', async () =>
   btn.disabled = true; btn.textContent = 'Αποθήκευση…';
 
   try {
-    let imageUrl = editingActionImageUrl;
-    const file = document.getElementById('actionImageFile').files[0];
-    if (file) {
-      document.getElementById('actionUploadStatus').textContent = 'Ανέβασμα εικόνας…';
-      imageUrl = await uploadToImgBB(file);
+    // Ανέβασμα νέων φωτογραφιών (έως 4 συνολικά με τις υπάρχουσες)
+    const images = [...editingActionImages];
+    const status = document.getElementById('actionUploadStatus');
+    for (let i = 0; i < pendingActionFiles.length; i++) {
+      status.textContent = `Ανέβασμα εικόνας ${i + 1}/${pendingActionFiles.length}…`;
+      images.push(await uploadToImgBB(pendingActionFiles[i]));
     }
+    status.textContent = '';
+    const finalImages = images.slice(0, MAX_ACTION_PHOTOS);
+    const socialUrl = document.getElementById('actionSocialUrl').value.trim();
 
     const payload = {
-      titleEl, titleEn, descEl, descEn, category, icon, order, imageUrl,
+      titleEl, titleEn, descEl, descEn, category, icon, order,
+      images: finalImages,
+      imageUrl: finalImages[0] || '',
+      socialUrl,
       authorUid: currentUser.uid,
       authorName: currentUser.displayName || currentUser.email,
     };

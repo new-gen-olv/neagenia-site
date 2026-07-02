@@ -28,13 +28,13 @@
 
 <!-- Mobile tabs -->
 <div class="admin-tabs-mobile" id="mobileTabs">
-  <button class="active" data-panel="pending">Εκκρεμότητες</button>
+  <button class="active" data-panel="pending">Εκκρεμότητες <span class="badge" data-badge="pending" style="display:none">0</span></button>
   <button data-panel="articles">Άρθρα</button>
   <button data-panel="announcements">Ανακοινώσεις</button>
   <button data-panel="gallery">Gallery</button>
   <button data-panel="actions">Δράσεις</button>
-  <button data-panel="volunteers" class="admin-only-tab">Εθελοντές</button>
-  <button data-panel="messages" class="admin-only-tab">Μηνύματα</button>
+  <button data-panel="volunteers" class="admin-only-tab">Εθελοντές <span class="badge" data-badge="volunteers" style="display:none">0</span></button>
+  <button data-panel="messages" class="admin-only-tab">Μηνύματα <span class="badge" data-badge="messages" style="display:none">0</span></button>
   <button data-panel="members" class="admin-only-tab">Μέλη</button>
 </div>
 
@@ -42,14 +42,14 @@
   <!-- Sidebar -->
   <aside class="admin-sidebar" id="adminSidebar">
     <div class="tab-item active" data-panel="pending">
-      ⏳ Εκκρεμότητες <span class="badge" id="pendingBadge" style="display:none">0</span>
+      ⏳ Εκκρεμότητες <span class="badge" data-badge="pending" style="display:none">0</span>
     </div>
     <div class="tab-item" data-panel="articles">📝 Άρθρα</div>
     <div class="tab-item" data-panel="announcements">📢 Ανακοινώσεις</div>
     <div class="tab-item" data-panel="gallery">🖼 Gallery</div>
     <div class="tab-item" data-panel="actions">🏃 Δράσεις</div>
-    <div class="tab-item admin-only-tab" data-panel="volunteers">🤝 Εθελοντές</div>
-    <div class="tab-item admin-only-tab" data-panel="messages">✉️ Μηνύματα</div>
+    <div class="tab-item admin-only-tab" data-panel="volunteers">🤝 Εθελοντές <span class="badge" data-badge="volunteers" style="display:none">0</span></div>
+    <div class="tab-item admin-only-tab" data-panel="messages">✉️ Μηνύματα <span class="badge" data-badge="messages" style="display:none">0</span></div>
     <div class="tab-item admin-only-tab" data-panel="members">👥 Μέλη</div>
   </aside>
 
@@ -164,6 +164,7 @@
               <option value="Δημόσιος χώρος">Δημόσιος χώρος</option>
               <option value="Μαθήματα">Μαθήματα</option>
               <option value="Πολιτισμός">Πολιτισμός</option>
+              <option value="Αλληλεγγύη">Αλληλεγγύη</option>
             </select>
           </div>
           <div class="form-group">
@@ -176,13 +177,17 @@
           </div>
         </div>
         <div class="form-group">
-          <label>Φωτογραφία (προαιρετικό, max 5MB)</label>
+          <label>Φωτογραφίες (έως 4, max 5MB η καθεμία, η 1η είναι η κύρια που φαίνεται στην κάρτα)</label>
           <div class="upload-area" id="actionUploadArea">
-            <input type="file" id="actionImageFile" accept="image/*" />
-            <p>📷 Κλίκ ή drag &amp; drop εικόνας</p>
-            <img class="upload-preview hidden" id="actionImagePreview" alt="Preview" />
+            <input type="file" id="actionImageFile" accept="image/*" multiple />
+            <p>📷 Κλίκ ή drag &amp; drop εικόνων (έως 4)</p>
             <p id="actionUploadStatus" style="font-size:0.78rem;color:#888;margin-top:6px;"></p>
           </div>
+          <div id="actionImagesStrip" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;"></div>
+        </div>
+        <div class="form-group">
+          <label>Link δημοσίευσης στα social (προαιρετικό, αν υπάρχουν περισσότερες φωτογραφίες εκεί)</label>
+          <input type="url" id="actionSocialUrl" placeholder="π.χ. https://www.facebook.com/NeaGeniaPraxis/posts/..." />
         </div>
         <button class="btn btn-primary" id="btnSubmitAction">Αποθήκευση</button>
         <button class="btn" id="btnCancelAction" style="display:none;margin-left:8px;background:#eee;">Ακύρωση</button>

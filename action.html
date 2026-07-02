@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Δράση — Νέα Γενιά «Πράξις»</title>
+  <meta name="description" content="Νέα Γενιά «Πράξις» Ολυμπιακού Χωριού" />
+  <link rel="icon" href="Assets/Images/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<header id="site-header">
+  <a href="index.html" class="header-logo">
+    <img src="Assets/Images/logo.png" alt="Logo Νέα Γενιά Πράξις" />
+    <span class="org-name">Νέα Γενιά «Πράξις»<br/>Ολυμπιακού Χωριού</span>
+  </a>
+  <a href="index.html#actions" class="article-back-btn" id="backBtn">← Επιστροφή</a>
+</header>
+
+<main class="article-detail-main">
+  <div class="article-detail-container" id="actionContainer">
+    <div class="spinner"></div>
+  </div>
+</main>
+
+<!-- Lightbox για τις φωτογραφίες της δράσης -->
+<div class="lightbox" id="lightbox" role="dialog" aria-label="Lightbox">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Κλείσιμο">&times;</button>
+  <img id="lightboxImg" src="" alt="" />
+  <div class="lightbox-caption" id="lightboxCaption"></div>
+</div>
+
+<script type="module" src="js/action.js"></script>
+</body>
+</html>

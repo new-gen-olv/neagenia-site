@@ -15,6 +15,9 @@ import {
 
 const provider = new GoogleAuthProvider();
 
+// Τα αυτόματα emails του Firebase (επαναφορά κωδικού κ.λπ.) στα ελληνικά
+auth.languageCode = 'el';
+
 async function getUserRole(uid) {
   const snap = await getDoc(doc(db, 'users', uid));
   console.log('[Auth] doc exists =', snap.exists(), '| data =', snap.exists() ? snap.data() : 'N/A');
@@ -108,6 +111,22 @@ if (btnGoogle) {
         showError('Σφάλμα Google Sign-in. Δοκίμασε ξανά.');
       }
     }
+  });
+}
+
+// Εμφάνιση/απόκρυψη κωδικού (αφορά μόνο τη σύνδεση με email)
+const togglePassword = document.getElementById('togglePassword');
+if (togglePassword) {
+  togglePassword.addEventListener('click', () => {
+    const input = document.getElementById('loginPassword');
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    document.getElementById('eyeOpen').style.display = show ? 'none' : 'block';
+    document.getElementById('eyeClosed').style.display = show ? 'block' : 'none';
+    const label = show ? 'Απόκρυψη κωδικού' : 'Εμφάνιση κωδικού';
+    togglePassword.setAttribute('aria-label', label);
+    togglePassword.title = label;
+    input.focus();
   });
 }
 
