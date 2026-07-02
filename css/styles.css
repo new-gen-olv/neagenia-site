@@ -328,6 +328,8 @@ section { padding: 80px 24px; }
 .donate-note ul { margin: 10px 0 12px 20px; }
 .donate-note li { margin-bottom: 4px; }
 .donate-note-footer { font-size: 0.85rem; color: #666; }
+.donate-note a { color: var(--primary-dark); font-weight: 700; text-decoration: underline; }
+.donate-note a:hover { color: var(--primary); }
 
 #about { background: var(--text); color: var(--white); }
 #about .section-title { color: var(--white); }

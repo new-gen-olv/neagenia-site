@@ -36,7 +36,21 @@ async function load() {
       return;
     }
     const d = snap.data();
-    document.title = `${d.title} — Νέα Γενιά «Πράξις»`;
+    document.title = `${d.title} | Νέα Γενιά «Πράξις» Ολυμπιακού Χωριού`;
+    const plain = (d.body || '').replace(/\s+/g, ' ').trim().slice(0, 160);
+    const setMeta = (name, content) => {
+      let m = document.querySelector(`meta[name="${name}"]`);
+      if (!m) { m = document.createElement('meta'); m.setAttribute('name', name); document.head.appendChild(m); }
+      m.setAttribute('content', content);
+    };
+    const setOg = (prop, content) => {
+      let m = document.querySelector(`meta[property="${prop}"]`);
+      if (!m) { m = document.createElement('meta'); m.setAttribute('property', prop); document.head.appendChild(m); }
+      m.setAttribute('content', content);
+    };
+    if (plain) { setMeta('description', plain); setOg('og:description', plain); }
+    setOg('og:title', d.title);
+    if (d.coverImageUrl) setOg('og:image', d.coverImageUrl);
 
     el.innerHTML = `
       ${d.coverImageUrl ? `<img src="${d.coverImageUrl}" alt="${d.title}" class="article-cover-img" />` : ''}

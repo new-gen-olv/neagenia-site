@@ -23,6 +23,18 @@ const T = {
 };
 const t = T[lang];
 
+// Ενημέρωση/δημιουργία meta tags για SEO και social share
+function setMeta(name, content) {
+  let m = document.querySelector(`meta[name="${name}"]`);
+  if (!m) { m = document.createElement('meta'); m.setAttribute('name', name); document.head.appendChild(m); }
+  m.setAttribute('content', content);
+}
+function setOg(prop, content) {
+  let m = document.querySelector(`meta[property="${prop}"]`);
+  if (!m) { m = document.createElement('meta'); m.setAttribute('property', prop); document.head.appendChild(m); }
+  m.setAttribute('content', content);
+}
+
 function descToHtml(text) {
   return (text || '')
     .split('\n\n')
@@ -45,11 +57,17 @@ async function load() {
     const d = snap.data();
     const title = lang === 'el' ? d.titleEl : (d.titleEn || d.titleEl);
     const desc  = lang === 'el' ? d.descEl  : (d.descEn  || d.descEl);
-    document.title = `${title} — Νέα Γενιά «Πράξις»`;
+    document.title = `${title} | Νέα Γενιά «Πράξις» Ολυμπιακού Χωριού`;
 
     // Φωτογραφίες: νέο πεδίο images (έως 4), fallback στο παλιό imageUrl
     const images = (d.images && d.images.length ? d.images : (d.imageUrl ? [d.imageUrl] : [])).slice(0, 4);
     const [mainImg, ...restImgs] = images;
+
+    // Δυναμικά meta για SEO και social share ανά δράση
+    setMeta('description', (desc || '').slice(0, 160));
+    setOg('og:title', title);
+    setOg('og:description', (desc || '').slice(0, 160));
+    if (mainImg) setOg('og:image', mainImg);
 
     el.innerHTML = `
       ${mainImg ? `<img src="${mainImg}" alt="${title}" class="article-cover-img action-photo" style="cursor:pointer;" />` : ''}

@@ -28,7 +28,7 @@ const translations = {
     donate_note_2: 'Το ονοματεπώνυμό σας',
     donate_note_3: 'Την ημερομηνία της κατάθεσης',
     donate_note_footer: 'Τα στοιχεία αυτά διευκολύνουν την ταυτοποίηση και την ορθή καταγραφή της δωρεάς από την ομάδα. Σας ευχαριστούμε θερμά! ❤',
-    donate_note_notify: 'Σε περίπτωση που καταθέσετε δωρεά, παρακαλούμε ενημερώστε μας μέσω της φόρμας επικοινωνίας ή απευθείας στο neageniaox@gmail.com.',
+    donate_note_notify: 'Σε περίπτωση που καταθέσετε δωρεά, παρακαλούμε ενημερώστε μας μέσω της φόρμας επικοινωνίας ή απευθείας στο <a href="mailto:newgen.olv@gmail.com">newgen.olv@gmail.com</a>.',
     btn_volunteer: 'Γίνε εθελοντής',
     btn_see_actions: 'Δες τις δράσεις μας',
     btn_send: 'Αποστολή',
@@ -97,7 +97,7 @@ const translations = {
     donate_note_2: 'Your full name',
     donate_note_3: 'The date of the deposit',
     donate_note_footer: 'These details help us identify and properly record your donation. Thank you very much! ❤',
-    donate_note_notify: 'If you make a donation, please let us know through the contact form or directly at neageniaox@gmail.com.',
+    donate_note_notify: 'If you make a donation, please let us know through the contact form or directly at <a href="mailto:newgen.olv@gmail.com">newgen.olv@gmail.com</a>.',
     btn_volunteer: 'Become a volunteer',
     btn_see_actions: 'See our actions',
     btn_send: 'Send',
@@ -459,6 +459,33 @@ if (btnCopyIban) {
   });
 }
 
+// ===== GOOGLE SHEETS (εθελοντές) =====
+// Στέλνει την εγγραφή εθελοντή σε Google Form, που ενημερώνει αυτόματα
+// το Google Sheet «Εθελοντές site». Αποτυχία δεν επηρεάζει τον επισκέπτη
+// (η εγγραφή έχει ήδη σωθεί σε Firestore + email).
+const SHEETS_FORM_ID = '1FAIpQLScXSx4CulxXwfPwsOQBGqS50odibGwhIVdsVbqod9VigD7-dA';
+const SHEETS_ENTRIES = {
+  name:      'entry.731191083',
+  email:     'entry.474990558',
+  phone:     'entry.1553215363',
+  interests: 'entry.1116117290',
+  message:   'entry.1477498083',
+};
+function sendVolunteerToSheet({ name, email, phone, interests, message }) {
+  if (!SHEETS_FORM_ID) return;
+  try {
+    const body = new URLSearchParams();
+    body.append(SHEETS_ENTRIES.name, name || '');
+    body.append(SHEETS_ENTRIES.email, email || '');
+    body.append(SHEETS_ENTRIES.phone, phone || '');
+    body.append(SHEETS_ENTRIES.interests, interests || '');
+    body.append(SHEETS_ENTRIES.message, message || '');
+    fetch(`https://docs.google.com/forms/d/e/${SHEETS_FORM_ID}/formResponse`, {
+      method: 'POST', mode: 'no-cors', body
+    }).catch(() => {});
+  } catch { /* silent */ }
+}
+
 // ===== FORM HELPERS =====
 function isValidEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 function showError(el, msg) { el.textContent = msg; el.style.display = 'block'; }
@@ -559,6 +586,7 @@ document.getElementById('volunteerForm').addEventListener('submit', async e => {
       });
     } catch { /* silent */ }
     sendAutoReply('volunteer', name, email);
+    sendVolunteerToSheet({ name, email, phone, interests: checked.join(', '), message });
     showSuccess(sucEl);
     form.reset();
   } catch {
