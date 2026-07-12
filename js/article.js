@@ -59,6 +59,16 @@ async function load() {
       <div class="article-detail-body">${bodyToHtml(d.body)}</div>
       <a href="index.html#news" class="article-back-link">← Επιστροφή στα άρθρα</a>
     `;
+
+    // Portrait εξώφυλλο: εμφανίζεται ολόκληρο (contain) αντί να κόβεται
+    const cover = el.querySelector('.article-cover-img');
+    if (cover) {
+      const markPortrait = () => {
+        if (cover.naturalHeight > cover.naturalWidth * 1.05) cover.classList.add('portrait');
+      };
+      if (cover.complete && cover.naturalWidth) markPortrait();
+      else cover.addEventListener('load', markPortrait, { once: true });
+    }
   } catch (err) {
     el.innerHTML = '<p class="article-not-found">Σφάλμα φόρτωσης.</p>';
     console.error('article.js:', err);

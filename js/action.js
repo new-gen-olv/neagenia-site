@@ -82,6 +82,16 @@ async function load() {
       <a href="index.html#actions" class="article-back-link">${t.back}</a>
     `;
 
+    // Portrait εξώφυλλο: εμφανίζεται ολόκληρο (contain) αντί να κόβεται
+    const cover = el.querySelector('.article-cover-img');
+    if (cover) {
+      const markPortrait = () => {
+        if (cover.naturalHeight > cover.naturalWidth * 1.05) cover.classList.add('portrait');
+      };
+      if (cover.complete && cover.naturalWidth) markPortrait();
+      else cover.addEventListener('load', markPortrait, { once: true });
+    }
+
     // Lightbox σε όλες τις φωτογραφίες
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightboxImg');

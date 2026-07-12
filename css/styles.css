@@ -728,3 +728,9 @@ section[id] { scroll-margin-top: 70px; }
 
 /* Κατακόρυφες (portrait) εικόνες δράσεων: εμφανίζονται ολόκληρες, χωρίς κόψιμο */
 .action-card-img img.portrait { object-fit: contain; background: #fff; }
+
+/* Κατακόρυφες (portrait) εικόνες εξωφύλλου σε δράσεις/άρθρα: ολόκληρες, κεντραρισμένες */
+.article-cover-img.portrait {
+  width: auto; max-width: 100%; max-height: 420px;
+  object-fit: contain; display: block; margin: 0 auto 32px;
+}
