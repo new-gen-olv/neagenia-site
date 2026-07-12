@@ -463,6 +463,20 @@ ${thanks}
     + `&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
+// Διαγραφή γραμμής εθελοντή ΚΑΙ από το Google Sheet «Εθελοντές site» (Apps Script web app).
+// Αποτυχία δεν επηρεάζει τη διαγραφή από τη βάση (silent).
+const SHEET_DELETE_URL = 'https://script.google.com/macros/s/AKfycbyY1BGq4vdbdTC1UKRHEUTVWadMlLZ_8q8pQxXtmoK9ZQ4nSnLn38AfqythyQ19xqPK/exec';
+const SHEET_DELETE_TOKEN = 'ngp-vol-del-3f8a1c6e92d47b05';
+function deleteVolunteerFromSheet(email) {
+  if (!email) return;
+  try {
+    const body = new URLSearchParams();
+    body.append('token', SHEET_DELETE_TOKEN);
+    body.append('email', email);
+    fetch(SHEET_DELETE_URL, { method: 'POST', mode: 'no-cors', body }).catch(() => {});
+  } catch { /* silent */ }
+}
+
 async function loadVolunteers() {
   const el = document.getElementById('volunteersList');
   const q = query(collection(db, 'volunteers'), orderBy('createdAt', 'desc'), limit(100));
@@ -481,7 +495,7 @@ async function loadVolunteers() {
         <td style="font-size:0.8rem;">${(v.interests || []).join(', ') || '—'}</td>
         <td style="font-size:0.82rem;color:#555;max-width:200px;">${v.message || '—'}</td>
         <td style="font-size:0.78rem;color:#888;">${fmt(v.createdAt)}</td>
-        <td><button class="btn btn-sm btn-danger" data-del-vol="${d.id}" title="Διαγραφή">🗑</button></td>
+        <td><button class="btn btn-sm btn-danger" data-del-vol="${d.id}" data-del-email="${v.email || ''}" title="Διαγραφή">🗑</button></td>
       </tr>`;
     }).join('')}</tbody>
   </table>`;
@@ -489,6 +503,7 @@ async function loadVolunteers() {
   el.querySelectorAll('[data-del-vol]').forEach(btn => btn.addEventListener('click', async () => {
     if (confirm('Διαγραφή αυτής της εγγραφής εθελοντή; Δεν αναιρείται.')) {
       await deleteDoc(doc(db, 'volunteers', btn.dataset.delVol));
+      deleteVolunteerFromSheet(btn.dataset.delEmail); // σβήνει και τη γραμμή του από το Google Sheet
       loadVolunteers();
     }
   }));
