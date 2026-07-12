@@ -725,3 +725,6 @@ section[id] { scroll-margin-top: 70px; }
 
 /* Κόκκινη καρδιά στο subfooter credit */
 .subfooter .heart { color: var(--red); }
+
+/* Κατακόρυφες (portrait) εικόνες δράσεων: εμφανίζονται ολόκληρες, χωρίς κόψιμο */
+.action-card-img img.portrait { object-fit: contain; background: #fff; }

@@ -293,6 +293,14 @@ function renderActions() {
   grid.innerHTML = items.length
     ? items.map(renderActionCard).join('')
     : `<p class="filter-empty">${translations[currentLang].filter_empty}</p>`;
+  // Portrait εικόνες: εμφανίζονται ολόκληρες (object-fit: contain) αντί να κόβονται
+  grid.querySelectorAll('.action-card-img img').forEach(img => {
+    const mark = () => {
+      if (img.naturalHeight > img.naturalWidth * 1.05) img.classList.add('portrait');
+    };
+    if (img.complete && img.naturalWidth) mark();
+    else img.addEventListener('load', mark, { once: true });
+  });
   refreshCarousels();
 }
 
