@@ -40,7 +40,7 @@ const translations = {
     problem_p3: 'Γι\' αυτό δεν περιμένουμε. Καθαρίζουμε, επιδιορθώνουμε, δημιουργούμε και διεκδικούμε. Έχουμε ήδη καταθέσει επίσημη επιστολή διαμαρτυρίας και διεκδίκησης για την επαναλειτουργία και τη διασφάλιση των χώρων ενεργών συλλόγων.',
     problem_p4: 'Είναι ένας καθαρός εθελοντικός αγώνας για τον τόπο μας, μακριά από κόμματα, δογματισμούς και άγονες αντιπαραθέσεις, με μόνο σκοπό την εύρεση λύσεων. Όλοι την ίδια ευθύνη φέρουμε, και όλοι ενωμένοι μπορούμε να δώσουμε μια μάχη για το μέλλον μας.',
     actions_title: 'Πράξεις, <span>όχι λόγια</span>',
-    news_title: 'Άρθρα & <span>Ανακοινώσεις</span>',
+    news_title: 'Ανακοινώσεις & <span>Άρθρα</span>',
     gallery_title: 'Gallery',
     about_title: 'Ποιοι <span>είμαστε</span>',
     about_p1: 'Είμαστε η <strong>Νέα Γενιά «Πράξις» Ολυμπιακού Χωριού</strong>, μια Αστική Μη Κερδοσκοπική Εταιρεία και, πάνω απ\' όλα, μια ομάδα νέων ανθρώπων που πιστεύουν ότι ο τόπος αλλάζει όταν οι πολίτες του ανασκουμπώνονται.',
@@ -73,6 +73,10 @@ const translations = {
     admin_panel: 'Πίνακας διαχείρισης',
     news_empty: 'Δεν υπάρχουν δημοσιεύσεις ακόμα.',
     gallery_empty: 'Δεν υπάρχουν φωτογραφίες ακόμα.',
+    filter_all_months: 'Όλοι οι μήνες',
+    filter_all_years: 'Όλα τα έτη',
+    filter_empty: 'Δεν βρέθηκαν αποτελέσματα για την περίοδο αυτή.',
+    read_more: 'Διάβασε περισσότερα →',
     err_required: 'Παρακαλώ συμπλήρωσε όλα τα απαιτούμενα πεδία.',
     err_generic: 'Κάτι πήγε στραβά. Δοκίμασε ξανά.',
     err_email: 'Μη έγκυρη διεύθυνση email.',
@@ -109,7 +113,7 @@ const translations = {
     problem_p3: 'That\'s why we don\'t wait. We clean, repair, create and we advocate. We have already filed an official letter of protest and demand for the reopening and safeguarding of the spaces of active community groups.',
     problem_p4: 'This is a pure volunteer effort for our place, free of parties, dogmatism and fruitless confrontation, with the sole aim of finding solutions. We all share the same responsibility, and united we can fight for our future.',
     actions_title: 'Actions, <span>not words</span>',
-    news_title: 'Articles & <span>Announcements</span>',
+    news_title: 'Announcements & <span>Articles</span>',
     gallery_title: 'Gallery',
     about_title: 'Who <span>we are</span>',
     about_p1: 'We are <strong>Nea Genia "Praxis" of the Olympic Village</strong>, a non-profit civil organization and, above all, a group of young people who believe that a place changes when its citizens roll up their sleeves.',
@@ -142,6 +146,10 @@ const translations = {
     admin_panel: 'Admin panel',
     news_empty: 'No posts yet.',
     gallery_empty: 'No photos yet.',
+    filter_all_months: 'All months',
+    filter_all_years: 'All years',
+    filter_empty: 'No results found for this period.',
+    read_more: 'Read more →',
     err_required: 'Please fill in all required fields.',
     err_generic: 'Something went wrong. Please try again.',
     err_email: 'Invalid email address.',
@@ -219,6 +227,27 @@ const SEED_ACTIONS = [
 
 let currentLang = 'el';
 let cachedActions = null;
+let cachedArticles = null;
+let cachedAnnouncements = null;
+
+// ===== ΗΜΕΡΟΛΟΓΙΑΚΟ ΦΙΛΤΡΟ (μήνας/έτος) =====
+const actionsFilter = { month: '', year: '' };
+const newsFilter = { month: '', year: '' };
+
+function itemDate(d) {
+  const ts = d.publishedAt || d.createdAt;
+  if (!ts) return null;
+  return ts.toDate ? ts.toDate() : new Date(ts);
+}
+
+function matchesFilter(d, f) {
+  if (!f.month && !f.year) return true;
+  const date = itemDate(d);
+  if (!date) return false;
+  if (f.year && date.getFullYear() !== Number(f.year)) return false;
+  if (f.month && date.getMonth() !== Number(f.month)) return false;
+  return true;
+}
 
 // ===== ACTIONS — render =====
 function renderActionCard(d) {
@@ -230,7 +259,7 @@ function renderActionCard(d) {
   // Προεπισκόπηση: αν το κείμενο είναι μεγάλο, κόβεται + «Διάβασε περισσότερα»
   const isLong = (fullDesc || '').length > 140;
   const desc = isLong ? fullDesc.slice(0, 140) + '…' : (fullDesc || '');
-  const readMore = currentLang === 'el' ? 'Διάβασε περισσότερα →' : 'Read more →';
+  const readMore = translations[currentLang].read_more;
 
   const mediaHtml = d.imageUrl
     ? `<div class="action-card-img"><img src="${d.imageUrl}" alt="${title}" loading="lazy"${styleAttr} /></div>`
@@ -260,17 +289,20 @@ function renderActionCard(d) {
 function renderActions() {
   const grid = document.getElementById('actionsGrid');
   if (!grid || !cachedActions) return;
-  grid.innerHTML = cachedActions.map(renderActionCard).join('');
+  const items = cachedActions.filter(d => matchesFilter(d, actionsFilter));
+  grid.innerHTML = items.length
+    ? items.map(renderActionCard).join('')
+    : `<p class="filter-empty">${translations[currentLang].filter_empty}</p>`;
+  refreshCarousels();
 }
 
 async function loadActions() {
-  const grid = document.getElementById('actionsGrid');
   try {
     const q = query(
       collection(db, 'actions'),
       where('status', '==', 'published'),
       orderBy('order'),
-      limit(20)
+      limit(50)
     );
     const snap = await getDocs(q);
     cachedActions = snap.empty ? SEED_ACTIONS : snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -278,6 +310,7 @@ async function loadActions() {
     cachedActions = SEED_ACTIONS;
   }
   renderActions();
+  refreshFilterSelects();
 }
 
 // ===== I18N apply =====
@@ -293,6 +326,9 @@ function applyTranslations() {
   const mob = document.getElementById('langToggleMobile');
   if (mob) mob.textContent = label;
   renderActions(); // δράσεις ξαναζωγραφίζονται στη νέα γλώσσα
+  renderNews('articles');
+  renderNews('announcements');
+  refreshFilterSelects(); // ετικέτες μηνών/ετών στη νέα γλώσσα
 }
 
 document.getElementById('langToggle').addEventListener('click', () => {
@@ -320,18 +356,21 @@ if (langToggleMobile) {
 const tabBtns = document.querySelectorAll('.tab-btn');
 const articlesGrid = document.getElementById('articlesGrid');
 const announcementsGrid = document.getElementById('announcementsGrid');
+const articlesWrap = document.getElementById('articlesWrap');
+const announcementsWrap = document.getElementById('announcementsWrap');
 
 tabBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     tabBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     if (btn.dataset.tab === 'articles') {
-      articlesGrid.classList.remove('hidden');
-      announcementsGrid.classList.add('hidden');
+      articlesWrap.classList.remove('hidden');
+      announcementsWrap.classList.add('hidden');
     } else {
-      articlesGrid.classList.add('hidden');
-      announcementsGrid.classList.remove('hidden');
+      articlesWrap.classList.add('hidden');
+      announcementsWrap.classList.remove('hidden');
     }
+    refreshCarousels();
   });
 });
 
@@ -341,9 +380,8 @@ function formatDate(ts) {
   return d.toLocaleDateString('el-GR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-function renderNewsCard(doc, col) {
-  const d = doc.data();
-  const url = `article.html?col=${col}&id=${doc.id}`;
+function renderNewsCard(d, col) {
+  const url = `article.html?col=${col}&id=${d.id}`;
   const imgHtml = d.coverImageUrl
     ? `<img src="${d.coverImageUrl}" alt="${d.title}" loading="lazy" />`
     : '';
@@ -356,40 +394,51 @@ function renderNewsCard(doc, col) {
           <h3>${d.title}</h3>
           <p>${preview}</p>
           <div class="meta">${d.authorName || ''} &middot; ${formatDate(d.publishedAt || d.createdAt)}</div>
-          ${d.body && d.body.length > 140 ? '<span class="read-more-label">Διάβασε περισσότερα →</span>' : ''}
+          ${d.body && d.body.length > 140 ? `<span class="read-more-label">${translations[currentLang].read_more}</span>` : ''}
         </div>
       </article>
     </a>`;
 }
 
+function renderNews(kind) {
+  const grid = kind === 'articles' ? articlesGrid : announcementsGrid;
+  const cached = kind === 'articles' ? cachedArticles : cachedAnnouncements;
+  if (!grid || !cached) return;
+  if (!cached.length) {
+    grid.innerHTML = `<p class="news-placeholder">${translations[currentLang].news_empty}</p>`;
+  } else {
+    const items = cached.filter(d => matchesFilter(d, newsFilter));
+    grid.innerHTML = items.length
+      ? items.map(d => renderNewsCard(d, kind)).join('')
+      : `<p class="filter-empty">${translations[currentLang].filter_empty}</p>`;
+  }
+  refreshCarousels();
+}
+
 async function loadArticles() {
   try {
-    const q = query(collection(db, 'articles'), where('status', '==', 'published'), orderBy('publishedAt', 'desc'), limit(12));
+    const q = query(collection(db, 'articles'), where('status', '==', 'published'), orderBy('publishedAt', 'desc'), limit(60));
     const snap = await getDocs(q);
-    if (snap.empty) {
-      articlesGrid.innerHTML = `<p class="news-placeholder">${translations[currentLang].news_empty}</p>`;
-    } else {
-      articlesGrid.innerHTML = snap.docs.map(d => renderNewsCard(d, 'articles')).join('');
-    }
+    cachedArticles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   } catch (err) {
     console.error('loadArticles error:', err);
-    articlesGrid.innerHTML = `<p class="news-placeholder">${translations[currentLang].news_empty}</p>`;
+    cachedArticles = [];
   }
+  renderNews('articles');
+  refreshFilterSelects();
 }
 
 async function loadAnnouncements() {
   try {
-    const q = query(collection(db, 'announcements'), where('status', '==', 'published'), orderBy('publishedAt', 'desc'), limit(12));
+    const q = query(collection(db, 'announcements'), where('status', '==', 'published'), orderBy('publishedAt', 'desc'), limit(60));
     const snap = await getDocs(q);
-    if (snap.empty) {
-      announcementsGrid.innerHTML = `<p class="news-placeholder">${translations[currentLang].news_empty}</p>`;
-    } else {
-      announcementsGrid.innerHTML = snap.docs.map(d => renderNewsCard(d, 'announcements')).join('');
-    }
+    cachedAnnouncements = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   } catch (err) {
     console.error('loadAnnouncements error:', err);
-    announcementsGrid.innerHTML = `<p class="news-placeholder">${translations[currentLang].news_empty}</p>`;
+    cachedAnnouncements = [];
   }
+  renderNews('announcements');
+  refreshFilterSelects();
 }
 
 // ===== GALLERY =====
@@ -400,7 +449,7 @@ const lightboxCaption = document.getElementById('lightboxCaption');
 
 async function loadGallery() {
   try {
-    const q = query(collection(db, 'gallery'), where('status', '==', 'published'), orderBy('createdAt', 'desc'), limit(24));
+    const q = query(collection(db, 'gallery'), where('status', '==', 'published'), orderBy('createdAt', 'desc'), limit(48));
     const snap = await getDocs(q);
     if (snap.empty) {
       galleryGrid.innerHTML = `<p class="gallery-placeholder">${translations[currentLang].gallery_empty}</p>`;
@@ -423,7 +472,82 @@ async function loadGallery() {
   } catch {
     galleryGrid.innerHTML = `<p class="gallery-placeholder">${translations[currentLang].gallery_empty}</p>`;
   }
+  refreshCarousels();
 }
+
+// ===== CAROUSEL (βελάκια αριστερά/δεξιά) =====
+const carouselUpdaters = [];
+
+function setupCarousel(wrapId) {
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  const track = wrap.querySelector('.carousel-track');
+  const prev = wrap.querySelector('.carousel-btn.prev');
+  const next = wrap.querySelector('.carousel-btn.next');
+  const step = () => Math.max(track.clientWidth, 240);
+  prev.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: 'smooth' }));
+  next.addEventListener('click', () => track.scrollBy({ left: step(), behavior: 'smooth' }));
+  const update = () => {
+    const overflow = track.scrollWidth > track.clientWidth + 4;
+    wrap.classList.toggle('no-overflow', !overflow);
+    prev.disabled = track.scrollLeft <= 4;
+    next.disabled = track.scrollLeft >= track.scrollWidth - track.clientWidth - 4;
+  };
+  track.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+  carouselUpdaters.push(update);
+  update();
+}
+
+function refreshCarousels() {
+  requestAnimationFrame(() => carouselUpdaters.forEach(u => u()));
+}
+
+// ===== ΦΙΛΤΡΑ ΗΜΕΡΟΜΗΝΙΑΣ — selects =====
+const actionsMonthSel = document.getElementById('actionsMonthSel');
+const actionsYearSel = document.getElementById('actionsYearSel');
+const newsMonthSel = document.getElementById('newsMonthSel');
+const newsYearSel = document.getElementById('newsYearSel');
+
+const MONTH_NAMES = {
+  el: ['Ιανουάριος', 'Φεβρουάριος', 'Μάρτιος', 'Απρίλιος', 'Μάιος', 'Ιούνιος',
+       'Ιούλιος', 'Αύγουστος', 'Σεπτέμβριος', 'Οκτώβριος', 'Νοέμβριος', 'Δεκέμβριος'],
+  en: ['January', 'February', 'March', 'April', 'May', 'June',
+       'July', 'August', 'September', 'October', 'November', 'December']
+};
+function monthName(i) { return MONTH_NAMES[currentLang][i]; }
+
+function populateMonthSelect(sel, current) {
+  if (!sel) return;
+  sel.innerHTML = `<option value="">${translations[currentLang].filter_all_months}</option>` +
+    Array.from({ length: 12 }, (_, i) => `<option value="${i}">${monthName(i)}</option>`).join('');
+  sel.value = current;
+}
+
+function populateYearSelect(sel, lists, current) {
+  if (!sel) return;
+  const years = new Set();
+  lists.forEach(list => (list || []).forEach(d => {
+    const dt = itemDate(d);
+    if (dt) years.add(dt.getFullYear());
+  }));
+  sel.innerHTML = `<option value="">${translations[currentLang].filter_all_years}</option>` +
+    [...years].sort((a, b) => b - a).map(y => `<option value="${y}">${y}</option>`).join('');
+  sel.value = current;
+  if (sel.value !== current) sel.value = '';
+}
+
+function refreshFilterSelects() {
+  populateMonthSelect(actionsMonthSel, actionsFilter.month);
+  populateMonthSelect(newsMonthSel, newsFilter.month);
+  populateYearSelect(actionsYearSel, [cachedActions], actionsFilter.year);
+  populateYearSelect(newsYearSel, [cachedArticles, cachedAnnouncements], newsFilter.year);
+}
+
+if (actionsMonthSel) actionsMonthSel.addEventListener('change', () => { actionsFilter.month = actionsMonthSel.value; renderActions(); });
+if (actionsYearSel) actionsYearSel.addEventListener('change', () => { actionsFilter.year = actionsYearSel.value; renderActions(); });
+if (newsMonthSel) newsMonthSel.addEventListener('change', () => { newsFilter.month = newsMonthSel.value; renderNews('articles'); renderNews('announcements'); });
+if (newsYearSel) newsYearSel.addEventListener('change', () => { newsFilter.year = newsYearSel.value; renderNews('articles'); renderNews('announcements'); });
 
 document.getElementById('lightboxClose').addEventListener('click', () => lightbox.classList.remove('open'));
 lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.classList.remove('open'); });
@@ -612,7 +736,12 @@ onAuthStateChanged(auth, async user => {
 });
 
 // ===== INIT =====
+setupCarousel('actionsWrap');
+setupCarousel('articlesWrap');
+setupCarousel('announcementsWrap');
+setupCarousel('galleryWrap');
 applyTranslations();
+refreshFilterSelects();
 loadActions();
 loadArticles();
 loadAnnouncements();

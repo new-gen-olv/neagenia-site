@@ -142,8 +142,16 @@
   <div class="section-inner">
     <h2 class="section-title" data-i18n="actions_title">Πράξεις, <span>όχι λόγια</span></h2>
     <div class="section-divider"></div>
-    <div id="actionsGrid" class="actions-grid">
-      <div class="spinner"></div>
+    <div class="date-filter">
+      <select id="actionsMonthSel" aria-label="Μήνας"></select>
+      <select id="actionsYearSel" aria-label="Έτος"></select>
+    </div>
+    <div class="carousel-wrap" id="actionsWrap">
+      <button type="button" class="carousel-btn prev" aria-label="Προηγούμενα">&#10094;</button>
+      <div id="actionsGrid" class="actions-grid carousel-track">
+        <div class="spinner"></div>
+      </div>
+      <button type="button" class="carousel-btn next" aria-label="Επόμενα">&#10095;</button>
     </div>
   </div>
 </section>
@@ -151,17 +159,29 @@
 <!-- ===== ΑΡΘΡΑ & ΑΝΑΚΟΙΝΩΣΕΙΣ ===== -->
 <section id="news">
   <div class="section-inner">
-    <h2 class="section-title" data-i18n="news_title">Άρθρα &amp; <span>Ανακοινώσεις</span></h2>
+    <h2 class="section-title" data-i18n="news_title">Ανακοινώσεις &amp; <span>Άρθρα</span></h2>
     <div class="section-divider"></div>
     <div class="news-tabs">
-      <button class="tab-btn active" data-tab="articles" data-i18n="nav_articles">Άρθρα</button>
-      <button class="tab-btn" data-tab="announcements" data-i18n="nav_announcements">Ανακοινώσεις</button>
+      <button class="tab-btn active" data-tab="announcements" data-i18n="nav_announcements">Ανακοινώσεις</button>
+      <button class="tab-btn" data-tab="articles" data-i18n="nav_articles">Άρθρα</button>
     </div>
-    <div id="articlesGrid" class="news-grid">
-      <div class="spinner"></div>
+    <div class="date-filter">
+      <select id="newsMonthSel" aria-label="Μήνας"></select>
+      <select id="newsYearSel" aria-label="Έτος"></select>
     </div>
-    <div id="announcementsGrid" class="news-grid hidden">
-      <div class="spinner"></div>
+    <div class="carousel-wrap" id="announcementsWrap">
+      <button type="button" class="carousel-btn prev" aria-label="Προηγούμενα">&#10094;</button>
+      <div id="announcementsGrid" class="news-grid carousel-track">
+        <div class="spinner"></div>
+      </div>
+      <button type="button" class="carousel-btn next" aria-label="Επόμενα">&#10095;</button>
+    </div>
+    <div class="carousel-wrap hidden" id="articlesWrap">
+      <button type="button" class="carousel-btn prev" aria-label="Προηγούμενα">&#10094;</button>
+      <div id="articlesGrid" class="news-grid carousel-track">
+        <div class="spinner"></div>
+      </div>
+      <button type="button" class="carousel-btn next" aria-label="Επόμενα">&#10095;</button>
     </div>
   </div>
 </section>
@@ -171,8 +191,12 @@
   <div class="section-inner">
     <h2 class="section-title" data-i18n="gallery_title">Gallery</h2>
     <div class="section-divider"></div>
-    <div id="galleryGrid" class="gallery-grid">
-      <div class="spinner"></div>
+    <div class="carousel-wrap" id="galleryWrap">
+      <button type="button" class="carousel-btn prev" aria-label="Προηγούμενα">&#10094;</button>
+      <div id="galleryGrid" class="gallery-grid carousel-track">
+        <div class="spinner"></div>
+      </div>
+      <button type="button" class="carousel-btn next" aria-label="Επόμενα">&#10095;</button>
     </div>
   </div>
 </section>
@@ -372,7 +396,7 @@
   </div>
   <div class="subfooter">
     <img src="Assets/Images/dg-creative-studio.png" alt="DG Creative Studio" />
-    <span>Created with ❤ by DG Creative Studio &middot; <a href="mailto:DG.creative.studio@proton.me">DG.creative.studio@proton.me</a> &middot; &copy; 2026</span>
+    <span>Created with ❤ by DG Creative Studio &middot; <a href="https://dggrouplabs.com" target="_blank" rel="noopener">member of DG Group</a> &middot; <a href="mailto:DG.creative.studio@proton.me">DG.creative.studio@proton.me</a> &middot; &copy; 2026</span>
   </div>
 </footer>
 

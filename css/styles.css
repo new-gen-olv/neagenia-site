@@ -659,3 +659,66 @@ section[id] { scroll-margin-top: 70px; }
 .news-card-link:hover { transform: translateY(-2px); }
 .news-card-link:hover .news-card { box-shadow: 0 8px 30px rgba(0,0,0,0.13); }
 .read-more-label { display: inline-block; margin-top: 8px; font-size: 0.82rem; font-weight: 700; color: var(--primary-dark); }
+
+/* ===== CAROUSEL (Πράξεις / Άρθρα / Gallery) ===== */
+.carousel-wrap { position: relative; margin-top: 8px; }
+.carousel-track {
+  display: flex; gap: 24px;
+  overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth;
+  padding: 6px 2px 16px;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+.carousel-track::-webkit-scrollbar { display: none; }
+.carousel-track > * { flex: 0 0 calc((100% - 48px) / 3); min-width: 0; scroll-snap-align: start; }
+@media (max-width: 900px) { .carousel-track > * { flex-basis: calc((100% - 24px) / 2); } }
+@media (max-width: 600px) { .carousel-track > * { flex-basis: 100%; } }
+
+/* Gallery: μικρότερα κελιά, περισσότερα ανά προβολή */
+.gallery-grid.carousel-track { gap: 14px; }
+.gallery-grid.carousel-track > * { flex-basis: calc((100% - 42px) / 4); }
+@media (max-width: 900px) { .gallery-grid.carousel-track > * { flex-basis: calc((100% - 28px) / 3); } }
+@media (max-width: 600px) { .gallery-grid.carousel-track > * { flex-basis: calc((100% - 14px) / 2); } }
+
+/* Placeholders / spinner καταλαμβάνουν όλο το πλάτος */
+.carousel-track > .spinner,
+.carousel-track > .news-placeholder,
+.carousel-track > .gallery-placeholder,
+.carousel-track > .filter-empty { flex: 1 1 100%; }
+.filter-empty { color: var(--gray); font-size: 0.95rem; padding: 20px 0; }
+
+/* Ίσα ύψη καρτών μέσα στο carousel */
+.carousel-track .action-card-link,
+.carousel-track .news-card-link { display: flex; }
+.carousel-track .action-card,
+.carousel-track .news-card { width: 100%; display: flex; flex-direction: column; }
+
+/* Βελάκια */
+.carousel-btn {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 5;
+  width: 42px; height: 42px; border-radius: 50%; border: none;
+  background: var(--primary); color: var(--white);
+  font-size: 1.05rem; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2); transition: var(--transition);
+}
+.carousel-btn:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-50%) scale(1.07); }
+.carousel-btn:disabled { opacity: 0.3; cursor: default; }
+.carousel-btn.prev { left: -14px; }
+.carousel-btn.next { right: -14px; }
+@media (max-width: 600px) {
+  .carousel-btn { width: 36px; height: 36px; }
+  .carousel-btn.prev { left: -6px; }
+  .carousel-btn.next { right: -6px; }
+}
+.carousel-wrap.no-overflow .carousel-btn { display: none; }
+
+/* ===== ΦΙΛΤΡΟ ΗΜΕΡΟΜΗΝΙΑΣ ===== */
+.date-filter { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+.date-filter select {
+  font-family: var(--font); font-size: 0.85rem; font-weight: 600;
+  padding: 8px 14px; border-radius: 20px;
+  border: 1.5px solid var(--gray-light); background: var(--white);
+  color: var(--text); cursor: pointer; outline: none;
+  transition: var(--transition);
+}
+.date-filter select:hover, .date-filter select:focus { border-color: var(--primary); }
