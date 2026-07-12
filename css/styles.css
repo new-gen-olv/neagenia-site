@@ -722,3 +722,6 @@ section[id] { scroll-margin-top: 70px; }
   transition: var(--transition);
 }
 .date-filter select:hover, .date-filter select:focus { border-color: var(--primary); }
+
+/* Κόκκινη καρδιά στο subfooter credit */
+.subfooter .heart { color: var(--red); }
