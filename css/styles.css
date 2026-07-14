@@ -760,7 +760,7 @@ section[id] { scroll-margin-top: 70px; }
 .sponsors-strip-inner { text-align: center; }
 .sponsors-strip-inner .section-divider { margin-left: auto; margin-right: auto; }
 .digital-sponsor-banner {
-  display: block; max-width: 860px; margin: 0 auto;
+  display: block; max-width: 620px; margin: 0 auto;
   border-radius: var(--radius); overflow: hidden;
   box-shadow: 0 10px 40px rgba(0,0,0,0.45);
   border: 1px solid rgba(255,255,255,0.12);
@@ -777,9 +777,21 @@ section[id] { scroll-margin-top: 70px; }
 /* ===== ΣΕΛΙΔΑ ΧΟΡΗΓΩΝ ===== */
 .sponsors-main { padding-top: 64px; min-height: 100vh; background: var(--bg); }
 .sponsors-main .section-inner { padding: 56px 24px 80px; }
-.sponsors-page-sub { color: #555; font-size: 1rem; max-width: 640px; margin-bottom: 48px; }
+.sponsors-page-title { text-align: center; }
+.sponsors-main .section-divider { margin-left: auto; margin-right: auto; }
+.sponsors-page-sub {
+  color: #555; font-size: 1rem; max-width: 640px;
+  margin: 0 auto 48px; text-align: center;
+}
 
-.digital-sponsor-block { margin-bottom: 56px; padding: 0; }
+.digital-sponsor-block { margin-bottom: 56px; padding: 0; text-align: center; }
+.digital-sponsor-block .sponsor-tier-title {
+  justify-content: center;
+  max-width: 620px; margin-left: auto; margin-right: auto;
+}
+.digital-sponsor-block .sponsor-tier-title::before {
+  content: ''; flex: 1; height: 2px; background: var(--gray-light); border-radius: 2px;
+}
 .digital-sponsor-caption {
   text-align: center; color: var(--gray); font-size: 0.85rem; margin-top: 14px;
 }
@@ -830,7 +842,7 @@ section[id] { scroll-margin-top: 70px; }
 }
 .sponsor-card-link:hover .sponsor-visit { color: var(--primary-dark); }
 
-.sponsors-empty { color: var(--gray); font-size: 0.95rem; padding: 12px 0 32px; }
+.sponsors-empty { color: var(--gray); font-size: 0.95rem; padding: 12px 0 32px; text-align: center; }
 
 .sponsor-cta {
   background: var(--white); border-radius: var(--radius);
