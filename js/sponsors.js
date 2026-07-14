@@ -2,7 +2,7 @@
 
 import { db } from './firebase-config.js';
 import {
-  collection, getDocs, query, orderBy, limit
+  collection, getDocs, addDoc, query, orderBy, limit, serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 // ===== I18N =====
@@ -14,10 +14,18 @@ const translations = {
     sp_digital_title: 'Επίσημος Ψηφιακός Χορηγός',
     sp_digital_caption: 'Η DG Group σχεδίασε, ανέπτυξε και συντηρεί δωρεάν την ψηφιακή παρουσία της ομάδας μας.',
     sp_cta_title: 'Θέλεις να γίνεις χορηγός;',
-    sp_cta_sub: 'Στήριξε το έργο μιας εθελοντικής ομάδας που δίνει καθημερινά ζωή στη γειτονιά. Επικοινώνησε μαζί μας για να συζητήσουμε πώς μπορούμε να συνεργαστούμε.',
-    sp_cta_btn: 'Επικοινώνησε μαζί μας',
+    sp_cta_sub: 'Στήριξε το έργο μιας εθελοντικής ομάδας που δίνει καθημερινά ζωή στη γειτονιά. Συμπλήρωσε τη φόρμα και θα επικοινωνήσουμε μαζί σου για να συζητήσουμε πώς μπορούμε να συνεργαστούμε.',
     sp_empty: 'Η θέση αυτή περιμένει τους πρώτους χορηγούς της ομάδας.',
     sp_visit: 'Επίσκεψη →',
+    spf_company: 'Επωνυμία επιχείρησης',
+    spf_name: 'Ονοματεπώνυμο υπευθύνου',
+    spf_phone: 'Τηλέφωνο (προαιρετικό)',
+    spf_message: 'Μήνυμα (προαιρετικό)',
+    spf_send: 'Αποστολή ενδιαφέροντος',
+    spf_success: 'Λάβαμε το ενδιαφέρον σου! Θα επικοινωνήσουμε σύντομα μαζί σου.',
+    err_required: 'Παρακαλώ συμπλήρωσε όλα τα απαιτούμενα πεδία.',
+    err_email: 'Μη έγκυρη διεύθυνση email.',
+    err_generic: 'Κάτι πήγε στραβά. Δοκίμασε ξανά.',
     footer_rights: 'Όλα τα δικαιώματα διατηρούνται.',
   },
   en: {
@@ -27,10 +35,18 @@ const translations = {
     sp_digital_title: 'Official Digital Sponsor',
     sp_digital_caption: 'DG Group designed, developed and maintains our team\'s digital presence free of charge.',
     sp_cta_title: 'Want to become a sponsor?',
-    sp_cta_sub: 'Support the work of a volunteer team that brings life to the neighborhood every day. Contact us to discuss how we can work together.',
-    sp_cta_btn: 'Get in touch',
+    sp_cta_sub: 'Support the work of a volunteer team that brings life to the neighborhood every day. Fill in the form and we\'ll get in touch to discuss how we can work together.',
     sp_empty: 'This spot is waiting for the team\'s first sponsors.',
     sp_visit: 'Visit →',
+    spf_company: 'Company name',
+    spf_name: 'Contact person',
+    spf_phone: 'Phone (optional)',
+    spf_message: 'Message (optional)',
+    spf_send: 'Send inquiry',
+    spf_success: 'We received your inquiry! We\'ll be in touch soon.',
+    err_required: 'Please fill in all required fields.',
+    err_email: 'Invalid email address.',
+    err_generic: 'Something went wrong. Please try again.',
     footer_rights: 'All rights reserved.',
   }
 };
@@ -113,6 +129,71 @@ async function loadSponsors() {
     cachedSponsors = [];
   }
   renderSponsors();
+}
+
+// ===== ΦΟΡΜΑ ΕΝΔΙΑΦΕΡΟΝΤΟΣ ΧΟΡΗΓΙΑΣ =====
+// Αποθηκεύεται στα contactMessages με σήμανση χορηγίας — εμφανίζεται
+// στο admin panel στα Μηνύματα, χωρίς ξεχωριστή διαχείριση.
+function isValidEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+const inquiryForm = document.getElementById('sponsorInquiryForm');
+if (inquiryForm) {
+  inquiryForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (inquiryForm.querySelector('input[name="website"]').value) return; // honeypot
+
+    const errEl = document.getElementById('sponsorInquiryError');
+    const sucEl = document.getElementById('sponsorInquirySuccess');
+    errEl.style.display = 'none';
+    sucEl.style.display = 'none';
+
+    const company = document.getElementById('siCompany').value.trim();
+    const name    = document.getElementById('siName').value.trim();
+    const email   = document.getElementById('siEmail').value.trim();
+    const phone   = document.getElementById('siPhone').value.trim();
+    const msg     = document.getElementById('siMessage').value.trim();
+
+    const showErr = m => { errEl.textContent = m; errEl.style.display = 'block'; };
+    if (!company || !name || !email) { showErr(translations[currentLang].err_required); return; }
+    if (!isValidEmail(email))        { showErr(translations[currentLang].err_email); return; }
+
+    const btn = inquiryForm.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    try {
+      const message = `🤝 ΕΝΔΙΑΦΕΡΟΝ ΧΟΡΗΓΙΑΣ · Επιχείρηση: ${company} · Τηλ: ${phone || '—'}${msg ? ' — ' + msg : ''}`;
+      await addDoc(collection(db, 'contactMessages'), {
+        name, email, message,
+        type: 'sponsor', company, phone,
+        createdAt: serverTimestamp()
+      });
+      // Ειδοποίηση στο email της ομάδας μέσω EmailJS — αποτυχία δεν μπλοκάρει
+      try {
+        await window.emailjs.send('service_orzkyoc', 'template_bvainut', {
+          form_type: 'Ενδιαφέρον χορηγίας',
+          name: `${name} (${company})`,
+          email, phone: phone || '', interests: '',
+          message: msg || ''
+        });
+      } catch { /* silent */ }
+      // Auto-reply στον υποψήφιο χορηγό
+      try {
+        const gr = currentLang !== 'en';
+        await window.emailjs.send('service_orzkyoc', 'template_6mpy8yq', {
+          email, name,
+          auto_subject: gr ? 'Νέα Γενιά «Πράξις»: Λάβαμε το ενδιαφέρον σας για χορηγία'
+                           : 'Nea Genia "Praxis": We received your sponsorship inquiry',
+          auto_message: gr ? 'Ευχαριστούμε θερμά για το ενδιαφέρον σας να στηρίξετε το έργο της ομάδας μας! Λάβαμε τα στοιχεία σας και θα επικοινωνήσουμε σύντομα μαζί σας.'
+                           : 'Thank you for your interest in supporting our team\'s work! We received your details and will get in touch with you soon.'
+        });
+      } catch { /* silent */ }
+      sucEl.style.display = 'block';
+      inquiryForm.reset();
+    } catch {
+      showErr(translations[currentLang].err_generic);
+    } finally {
+      btn.disabled = false;
+    }
+  });
 }
 
 // ===== INIT =====

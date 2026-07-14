@@ -851,3 +851,9 @@ section[id] { scroll-margin-top: 70px; }
 }
 .sponsor-cta h3 { font-size: 1.3rem; font-weight: 800; margin-bottom: 10px; }
 .sponsor-cta p { color: #555; font-size: 0.95rem; max-width: 560px; margin: 0 auto 24px; }
+
+/* Φόρμα ενδιαφέροντος χορηγίας */
+.sponsor-cta form { max-width: 640px; margin: 0 auto; text-align: left; }
+.sponsor-form-grid { display: grid; gap: 0 16px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .sponsor-form-grid { grid-template-columns: 1fr 1fr; } }
+.sponsor-cta form .btn { display: block; margin: 6px auto 0; }
