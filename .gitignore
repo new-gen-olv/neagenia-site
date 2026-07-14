@@ -14,9 +14,6 @@ newgen-olv-prompt.md
 SETUP.md
 files.zip
 
-# Custom domain (CNAME) — εκτός για production deploy
-# Αφαίρεσε αυτή τη γραμμή όταν είσαι έτοιμος για neageniaolv.org
-CNAME
 
 # Windows
 desktop.ini
