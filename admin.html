@@ -34,8 +34,10 @@
   <button data-panel="announcements">Ανακοινώσεις</button>
   <button data-panel="gallery">Gallery</button>
   <button data-panel="actions">Δράσεις</button>
+  <button data-panel="sponsors" class="admin-only-tab">Χορηγοί</button>
   <button data-panel="volunteers" class="admin-only-tab">Εθελοντές <span class="badge" data-badge="volunteers" style="display:none">0</span></button>
   <button data-panel="messages" class="admin-only-tab">Μηνύματα <span class="badge" data-badge="messages" style="display:none">0</span></button>
+  <button data-panel="newsletter" class="admin-only-tab">Newsletter</button>
   <button data-panel="members" class="admin-only-tab">Μέλη</button>
 </div>
 
@@ -49,8 +51,10 @@
     <div class="tab-item" data-panel="announcements">📢 Ανακοινώσεις</div>
     <div class="tab-item" data-panel="gallery">🖼 Gallery</div>
     <div class="tab-item" data-panel="actions">🏃 Δράσεις</div>
-    <div class="tab-item admin-only-tab" data-panel="volunteers">🤝 Εθελοντές <span class="badge" data-badge="volunteers" style="display:none">0</span></div>
+    <div class="tab-item admin-only-tab" data-panel="sponsors">🤝 Χορηγοί</div>
+    <div class="tab-item admin-only-tab" data-panel="volunteers">🙋 Εθελοντές <span class="badge" data-badge="volunteers" style="display:none">0</span></div>
     <div class="tab-item admin-only-tab" data-panel="messages">✉️ Μηνύματα <span class="badge" data-badge="messages" style="display:none">0</span></div>
+    <div class="tab-item admin-only-tab" data-panel="newsletter">📬 Newsletter</div>
     <div class="tab-item admin-only-tab" data-panel="members">👥 Μέλη</div>
   </aside>
 
@@ -197,6 +201,62 @@
       <div id="actionsList"><div class="spinner"></div></div>
     </section>
 
+    <!-- Χορηγοί (admin only) -->
+    <section class="admin-panel" id="panel-sponsors">
+      <h2>Χορηγοί</h2>
+      <p style="font-size:0.85rem;color:#888;margin-bottom:16px;">
+        Ο Επίσημος Ψηφιακός Χορηγός (DG Group) είναι μόνιμος στη σελίδα και δεν διαχειρίζεται από εδώ.
+        Εδώ καταχωρούνται οι υπόλοιποι χορηγοί, που εμφανίζονται στη σελίδα
+        <a href="sponsors.html" target="_blank" rel="noopener" style="color:var(--blue);">sponsors.html</a>.
+      </p>
+      <div class="admin-form">
+        <h3 id="sponsorFormTitle">Νέος Χορηγός</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label>Όνομα επιχείρησης / χορηγού</label>
+            <input type="text" id="sponsorName" placeholder="π.χ. Καφέ Πλατεία" />
+          </div>
+          <div class="form-group">
+            <label>Κατηγορία</label>
+            <select id="sponsorTier" style="padding:10px;border:1.5px solid #ddd;border-radius:8px;font-family:var(--font);font-size:0.9rem;width:100%;">
+              <option value="gold">Χρυσός Χορηγός</option>
+              <option value="sponsor" selected>Χορηγός</option>
+              <option value="supporter">Υποστηρικτής</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Σύντομη περιγραφή (ΕΛ, προαιρετικό)</label>
+            <textarea id="sponsorDescEl" style="min-height:70px;" placeholder="1-2 γραμμές για τον χορηγό"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Short description (EN, προαιρετικό)</label>
+            <textarea id="sponsorDescEn" style="min-height:70px;"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Website (προαιρετικό)</label>
+            <input type="url" id="sponsorWebsite" placeholder="https://..." />
+          </div>
+          <div class="form-group">
+            <label>Σειρά (order)</label>
+            <input type="number" id="sponsorOrder" value="10" min="1" max="99" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Λογότυπο / φωτογραφία (max 5MB)</label>
+          <div class="upload-area" id="sponsorUploadArea">
+            <input type="file" id="sponsorImageFile" accept="image/*" />
+            <p>📷 Κλίκ ή drag &amp; drop εικόνας</p>
+            <img class="upload-preview hidden" id="sponsorImagePreview" alt="Preview" />
+            <p id="sponsorUploadStatus" style="font-size:0.78rem;color:#888;margin-top:6px;"></p>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btnSubmitSponsor">Αποθήκευση</button>
+        <button class="btn" id="btnCancelSponsor" style="display:none;margin-left:8px;background:#eee;">Ακύρωση</button>
+        <div class="form-error" id="sponsorError"></div>
+      </div>
+      <div id="sponsorsList"><div class="spinner"></div></div>
+    </section>
+
     <!-- Εθελοντές (admin only) -->
     <section class="admin-panel" id="panel-volunteers">
       <h2>Φόρμες Εθελοντών</h2>
@@ -213,6 +273,20 @@
     <section class="admin-panel" id="panel-messages">
       <h2>Μηνύματα Επικοινωνίας</h2>
       <div id="messagesList"><div class="spinner"></div></div>
+    </section>
+
+    <!-- Newsletter (admin only) -->
+    <section class="admin-panel" id="panel-newsletter">
+      <h2>Newsletter</h2>
+      <p style="font-size:0.85rem;color:#888;margin-bottom:16px;">
+        Οι εγγεγραμμένοι από τη φόρμα της αρχικής σελίδας. Με τα κουμπιά παρακάτω αντιγράφεις ή
+        κατεβάζεις τη λίστα για να τη χρησιμοποιήσεις στο Brevo ή στο Gmail της ομάδας.
+      </p>
+      <p style="margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-sm btn-blue" id="btnCopyEmails">📋 Αντιγραφή όλων των emails</button>
+        <button class="btn btn-sm btn-primary" id="btnExportCsv">⬇ Λήψη CSV (για Brevo)</button>
+      </p>
+      <div id="newsletterList"><div class="spinner"></div></div>
     </section>
 
     <!-- Μέλη (admin only) -->

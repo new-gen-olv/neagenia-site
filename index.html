@@ -84,6 +84,7 @@
     <a href="#about" data-i18n="nav_about">Σχετικά</a>
     <a href="#volunteerForm" data-i18n="nav_join">Γίνε μέλος</a>
     <a href="#contact" data-i18n="nav_contact">Επικοινωνία</a>
+    <a href="sponsors.html" data-i18n="nav_sponsors">Χορηγοί</a>
     <a href="#donate" class="nav-donate" data-i18n="nav_donate">❤ Δωρεά</a>
   </nav>
   <div class="nav-actions">
@@ -103,6 +104,7 @@
   <a href="#about" data-i18n="nav_about">Σχετικά</a>
   <a href="#volunteerForm" data-i18n="nav_join">Γίνε μέλος</a>
   <a href="#contact" data-i18n="nav_contact">Επικοινωνία</a>
+  <a href="sponsors.html" data-i18n="nav_sponsors">Χορηγοί</a>
   <a href="#donate" class="nav-donate" data-i18n="nav_donate">❤ Δωρεά</a>
   <div class="mobile-nav-lang">
     <button class="lang-toggle" id="langToggleMobile" aria-label="Εναλλαγή γλώσσας">EN</button>
@@ -334,6 +336,42 @@
         </form>
       </div>
 
+    </div>
+  </div>
+</section>
+
+<!-- ===== NEWSLETTER ===== -->
+<section id="newsletter">
+  <div class="section-inner newsletter-inner">
+    <div class="newsletter-text">
+      <h2 class="section-title" data-i18n="nl_title">Μείνε <span>ενημερωμένος</span></h2>
+      <p data-i18n="nl_sub">Γράψου στο newsletter μας για να μαθαίνεις πρώτος τις δράσεις, τις ανακοινώσεις και τα νέα της ομάδας.</p>
+    </div>
+    <form id="newsletterForm" novalidate>
+      <!-- Honeypot anti-spam -->
+      <div class="form-group honeypot">
+        <input type="text" name="website" tabindex="-1" autocomplete="off" />
+      </div>
+      <div class="newsletter-row">
+        <input type="email" id="nlEmail" name="email" placeholder="Το email σου" data-i18n-placeholder="nl_placeholder" required />
+        <button type="submit" class="btn btn-primary" data-i18n="nl_btn">Εγγραφή</button>
+      </div>
+      <div class="form-success" id="newsletterSuccess" data-i18n="nl_success">Εγγράφηκες στο newsletter μας! Ευχαριστούμε ❤</div>
+      <div class="form-error" id="newsletterError"></div>
+    </form>
+  </div>
+</section>
+
+<!-- ===== ΧΟΡΗΓΟΙ ===== -->
+<section id="sponsors">
+  <div class="section-inner sponsors-strip-inner">
+    <h2 class="section-title" data-i18n="sponsors_title">Οι <span>Χορηγοί</span> μας</h2>
+    <div class="section-divider"></div>
+    <a href="https://dggrouplabs.com" target="_blank" rel="noopener" class="digital-sponsor-banner" title="DG Group — dggrouplabs.com">
+      <img src="Assets/Images/digital_Sponsor.png" alt="DG Group — Επίσημος Ψηφιακός Χορηγός" loading="lazy" />
+    </a>
+    <div class="sponsors-strip-cta">
+      <a href="sponsors.html" class="btn btn-outline" data-i18n="sponsors_all_btn">Δες όλους τους χορηγούς →</a>
     </div>
   </div>
 </section>

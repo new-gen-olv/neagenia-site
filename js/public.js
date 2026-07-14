@@ -2,7 +2,7 @@
 
 import { db, auth } from './firebase-config.js';
 import {
-  collection, getDocs, addDoc, query, where, orderBy, serverTimestamp, limit, doc, getDoc
+  collection, getDocs, addDoc, setDoc, query, where, orderBy, serverTimestamp, limit, doc, getDoc
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
@@ -17,7 +17,16 @@ const translations = {
     nav_about: 'Σχετικά',
     nav_contact: 'Επικοινωνία',
     nav_join: 'Γίνε μέλος',
+    nav_sponsors: 'Χορηγοί',
     nav_donate: '❤ Δωρεά',
+    sponsors_title: 'Οι <span>Χορηγοί</span> μας',
+    sponsors_all_btn: 'Δες όλους τους χορηγούς →',
+    nl_title: 'Μείνε <span>ενημερωμένος</span>',
+    nl_sub: 'Γράψου στο newsletter μας για να μαθαίνεις πρώτος τις δράσεις, τις ανακοινώσεις και τα νέα της ομάδας.',
+    nl_placeholder: 'Το email σου',
+    nl_btn: 'Εγγραφή',
+    nl_success: 'Εγγράφηκες στο newsletter μας! Ευχαριστούμε ❤',
+    nl_exists: 'Αυτό το email είναι ήδη εγγεγραμμένο στο newsletter μας.',
     donate_section_title: 'Στήριξε τη <span>δράση μας</span>',
     donate_sub: 'Κάθε δωρεά, μικρή ή μεγάλη, μας βοηθά να συνεχίσουμε το έργο μας για τη γειτονιά. Η κατάθεση γίνεται απευθείας στον τραπεζικό λογαριασμό της ομάδας, μέσω e-banking ή σε κατάστημα της τράπεζάς σας.',
     donate_bank: 'Τράπεζα Πειραιώς',
@@ -90,7 +99,16 @@ const translations = {
     nav_about: 'About',
     nav_contact: 'Contact',
     nav_join: 'Join us',
+    nav_sponsors: 'Sponsors',
     nav_donate: '❤ Donate',
+    sponsors_title: 'Our <span>Sponsors</span>',
+    sponsors_all_btn: 'See all our sponsors →',
+    nl_title: 'Stay <span>updated</span>',
+    nl_sub: 'Subscribe to our newsletter to be the first to hear about our actions, announcements and team news.',
+    nl_placeholder: 'Your email',
+    nl_btn: 'Subscribe',
+    nl_success: 'You\'re subscribed to our newsletter! Thank you ❤',
+    nl_exists: 'This email is already subscribed to our newsletter.',
     donate_section_title: 'Support <span>our work</span>',
     donate_sub: 'Every donation, big or small, helps us continue our work for the neighbourhood. Deposits are made directly to the team\'s bank account, via e-banking or at your bank\'s branch.',
     donate_bank: 'Piraeus Bank',
@@ -327,6 +345,10 @@ function applyTranslations() {
     const key = el.getAttribute('data-i18n');
     const val = translations[currentLang][key];
     if (val !== undefined) el.innerHTML = val;
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const val = translations[currentLang][el.getAttribute('data-i18n-placeholder')];
+    if (val !== undefined) el.placeholder = val;
   });
   document.documentElement.lang = currentLang;
   const label = currentLang === 'el' ? 'EN' : 'ΕΛ';
@@ -727,6 +749,46 @@ document.getElementById('volunteerForm').addEventListener('submit', async e => {
     btn.disabled = false;
   }
 });
+
+// ===== NEWSLETTER FORM =====
+// Το email γίνεται το ID του doc (lowercase) — έτσι δεν μπαίνουν διπλοεγγραφές:
+// τα rules επιτρέπουν μόνο create, οπότε δεύτερη προσπάθεια απορρίπτεται.
+const newsletterForm = document.getElementById('newsletterForm');
+if (newsletterForm) {
+  newsletterForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (newsletterForm.querySelector('input[name="website"]').value) return; // honeypot
+
+    const errEl = document.getElementById('newsletterError');
+    const sucEl = document.getElementById('newsletterSuccess');
+    hideError(errEl); sucEl.style.display = 'none';
+
+    const email = document.getElementById('nlEmail').value.trim().toLowerCase();
+    if (!email)              { showError(errEl, translations[currentLang].err_required); return; }
+    if (!isValidEmail(email)) { showError(errEl, translations[currentLang].err_email); return; }
+
+    const btn = newsletterForm.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    try {
+      await setDoc(doc(db, 'newsletter', email), {
+        email,
+        lang: currentLang,
+        createdAt: serverTimestamp()
+      });
+      showSuccess(sucEl);
+      newsletterForm.reset();
+    } catch (err) {
+      // permission-denied σημαίνει ότι το doc υπάρχει ήδη (τα rules απαγορεύουν update)
+      if (err && err.code === 'permission-denied') {
+        showError(errEl, translations[currentLang].nl_exists);
+      } else {
+        showError(errEl, translations[currentLang].err_generic);
+      }
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
 
 // ===== ADMIN SHORTCUT =====
 // Εμφανίζει το floating badge μόνο σε logged-in admin/author

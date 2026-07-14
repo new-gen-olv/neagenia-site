@@ -15,6 +15,9 @@ let currentRole = null; // 'admin' | 'author'
 let editingArticleId = null;
 let editingAnnId = null;
 let editingActionId = null;
+let editingSponsorId = null;
+let editingSponsorLogo = '';    // υπάρχον logo URL του χορηγού που επεξεργαζόμαστε
+let cachedNewsletterEmails = [];
 let editingActionImages = [];   // υπάρχουσες φωτό (URLs) της δράσης που επεξεργαζόμαστε
 let pendingActionFiles = [];    // νέα αρχεία προς ανέβασμα (μαζί max 4)
 const MAX_ACTION_PHOTOS = 4;
@@ -46,6 +49,8 @@ onAuthStateChanged(auth, async user => {
     loadVolunteers();
     loadMessages();
     loadMembers();
+    loadSponsorsAdmin();
+    loadNewsletter();
   }
 });
 
@@ -729,6 +734,180 @@ async function loadMembers() {
     }
   });
 }
+
+// ===== SPONSORS (admin only) =====
+// Ο Επίσημος Ψηφιακός Χορηγός (DG Group) είναι hardcoded στο sponsors.html —
+// εδώ διαχειρίζονται μόνο οι υπόλοιποι χορηγοί.
+const SPONSOR_TIER_LABELS = { gold: 'Χρυσός Χορηγός', sponsor: 'Χορηγός', supporter: 'Υποστηρικτής' };
+
+setupUploadArea('sponsorUploadArea', 'sponsorImageFile', 'sponsorImagePreview', 'sponsorUploadStatus');
+
+async function loadSponsorsAdmin() {
+  const el = document.getElementById('sponsorsList');
+  if (!el) return;
+  const q = query(collection(db, 'sponsors'), orderBy('order'), limit(100));
+  const snap = await getDocs(q);
+  if (snap.empty) { el.innerHTML = '<p style="color:#888;">Δεν υπάρχουν χορηγοί ακόμα.</p>'; return; }
+  el.innerHTML = `<table class="content-table">
+    <thead><tr><th>#</th><th>Logo</th><th>Όνομα</th><th>Κατηγορία</th><th>Website</th><th>Ενέργειες</th></tr></thead>
+    <tbody>${snap.docs.map(d => {
+      const s = d.data();
+      return `<tr>
+        <td>${s.order || ''}</td>
+        <td>${s.logoUrl ? `<img src="${s.logoUrl}" alt="" style="width:56px;height:40px;object-fit:contain;background:#f5f5f5;border-radius:6px;" />` : '—'}</td>
+        <td><strong>${s.name}</strong></td>
+        <td style="font-size:0.82rem;color:#666;">${SPONSOR_TIER_LABELS[s.tier] || s.tier || '—'}</td>
+        <td style="font-size:0.8rem;">${s.website ? `<a href="${s.website}" target="_blank" rel="noopener" style="color:var(--blue);">link</a>` : '—'}</td>
+        <td style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-sm btn-blue" data-edit-sp="${d.id}">Επεξ.</button>
+          <button class="btn btn-sm btn-danger" data-del-sp="${d.id}">Διαγρ.</button>
+        </td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+
+  el.querySelectorAll('[data-edit-sp]').forEach(btn => btn.addEventListener('click', () => startEditSponsor(btn.dataset.editSp)));
+  el.querySelectorAll('[data-del-sp]').forEach(btn => btn.addEventListener('click', async () => {
+    if (confirm('Διαγραφή χορηγού;')) { await deleteDoc(doc(db, 'sponsors', btn.dataset.delSp)); loadSponsorsAdmin(); }
+  }));
+}
+
+async function startEditSponsor(id) {
+  const snap = await getDoc(doc(db, 'sponsors', id));
+  const s = snap.data();
+  document.getElementById('sponsorName').value = s.name || '';
+  document.getElementById('sponsorTier').value = s.tier || 'sponsor';
+  document.getElementById('sponsorDescEl').value = s.descEl || '';
+  document.getElementById('sponsorDescEn').value = s.descEn || '';
+  document.getElementById('sponsorWebsite').value = s.website || '';
+  document.getElementById('sponsorOrder').value = s.order || 10;
+  editingSponsorLogo = s.logoUrl || '';
+  if (editingSponsorLogo) {
+    const preview = document.getElementById('sponsorImagePreview');
+    preview.src = editingSponsorLogo;
+    preview.classList.remove('hidden');
+  }
+  document.getElementById('sponsorFormTitle').textContent = 'Επεξεργασία Χορηγού';
+  document.getElementById('btnCancelSponsor').style.display = 'inline-block';
+  editingSponsorId = id;
+  document.getElementById('panel-sponsors').scrollIntoView({ behavior: 'smooth' });
+}
+
+document.getElementById('btnCancelSponsor')?.addEventListener('click', () => {
+  editingSponsorId = null;
+  editingSponsorLogo = '';
+  ['sponsorName', 'sponsorDescEl', 'sponsorDescEn', 'sponsorWebsite'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('sponsorTier').value = 'sponsor';
+  document.getElementById('sponsorOrder').value = 10;
+  document.getElementById('sponsorFormTitle').textContent = 'Νέος Χορηγός';
+  document.getElementById('btnCancelSponsor').style.display = 'none';
+  document.getElementById('sponsorError').style.display = 'none';
+  document.getElementById('sponsorImagePreview').classList.add('hidden');
+  document.getElementById('sponsorUploadStatus').textContent = '';
+  document.getElementById('sponsorImageFile').value = '';
+});
+
+document.getElementById('btnSubmitSponsor')?.addEventListener('click', async () => {
+  const name    = document.getElementById('sponsorName').value.trim();
+  const tier    = document.getElementById('sponsorTier').value;
+  const descEl  = document.getElementById('sponsorDescEl').value.trim();
+  const descEn  = document.getElementById('sponsorDescEn').value.trim();
+  const website = document.getElementById('sponsorWebsite').value.trim();
+  const order   = parseInt(document.getElementById('sponsorOrder').value) || 10;
+  const errEl   = document.getElementById('sponsorError');
+  errEl.style.display = 'none';
+
+  if (!name) { errEl.textContent = 'Το όνομα είναι υποχρεωτικό.'; errEl.style.display = 'block'; return; }
+  if (website && !/^https?:\/\//.test(website)) {
+    errEl.textContent = 'Το website πρέπει να ξεκινά με http:// ή https://'; errEl.style.display = 'block'; return;
+  }
+
+  const btn = document.getElementById('btnSubmitSponsor');
+  btn.disabled = true; btn.textContent = 'Αποθήκευση…';
+
+  try {
+    let logoUrl = editingSponsorLogo;
+    const file = document.getElementById('sponsorImageFile').files[0];
+    if (file) {
+      document.getElementById('sponsorUploadStatus').textContent = 'Ανέβασμα εικόνας…';
+      logoUrl = await uploadToImgBB(file);
+    }
+    if (!logoUrl && !editingSponsorId) {
+      errEl.textContent = 'Επίλεξε λογότυπο ή φωτογραφία για τον χορηγό.'; errEl.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Αποθήκευση';
+      document.getElementById('sponsorUploadStatus').textContent = '';
+      return;
+    }
+
+    const payload = { name, tier, descEl, descEn, website, order, logoUrl };
+    if (editingSponsorId) {
+      await updateDoc(doc(db, 'sponsors', editingSponsorId), payload);
+    } else {
+      await addDoc(collection(db, 'sponsors'), { ...payload, createdAt: serverTimestamp() });
+    }
+    document.getElementById('btnCancelSponsor').click();
+    loadSponsorsAdmin();
+  } catch (err) {
+    errEl.textContent = err.message || 'Σφάλμα αποθήκευσης.';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Αποθήκευση';
+  }
+});
+
+// ===== NEWSLETTER (admin only) =====
+async function loadNewsletter() {
+  const el = document.getElementById('newsletterList');
+  if (!el) return;
+  const q = query(collection(db, 'newsletter'), orderBy('createdAt', 'desc'), limit(500));
+  const snap = await getDocs(q);
+  cachedNewsletterEmails = snap.docs.map(d => d.data().email || d.id);
+  if (snap.empty) { el.innerHTML = '<p style="color:#888;">Δεν υπάρχουν εγγραφές στο newsletter ακόμα.</p>'; return; }
+  el.innerHTML = `<p style="font-size:0.85rem;color:#555;margin-bottom:10px;"><strong>${snap.size}</strong> εγγεγραμμένοι</p>
+  <table class="content-table">
+    <thead><tr><th>Email</th><th>Γλώσσα</th><th>Ημ/νία εγγραφής</th><th></th></tr></thead>
+    <tbody>${snap.docs.map(d => {
+      const n = d.data();
+      return `<tr>
+        <td><strong>${n.email || d.id}</strong></td>
+        <td style="font-size:0.8rem;color:#888;">${(n.lang || 'el').toUpperCase()}</td>
+        <td style="font-size:0.78rem;color:#888;">${fmt(n.createdAt)}</td>
+        <td><button class="btn btn-sm btn-danger" data-del-nl="${d.id}" title="Διαγραφή">🗑</button></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+
+  el.querySelectorAll('[data-del-nl]').forEach(btn => btn.addEventListener('click', async () => {
+    if (confirm('Διαγραφή αυτού του email από το newsletter;')) {
+      await deleteDoc(doc(db, 'newsletter', btn.dataset.delNl));
+      loadNewsletter();
+    }
+  }));
+}
+
+document.getElementById('btnCopyEmails')?.addEventListener('click', async () => {
+  const btn = document.getElementById('btnCopyEmails');
+  if (!cachedNewsletterEmails.length) { btn.textContent = 'Δεν υπάρχουν emails'; setTimeout(() => btn.textContent = '📋 Αντιγραφή όλων των emails', 2000); return; }
+  try {
+    await navigator.clipboard.writeText(cachedNewsletterEmails.join(', '));
+    btn.textContent = `✓ Αντιγράφηκαν ${cachedNewsletterEmails.length} emails`;
+  } catch {
+    btn.textContent = 'Αποτυχία αντιγραφής';
+  }
+  setTimeout(() => btn.textContent = '📋 Αντιγραφή όλων των emails', 2500);
+});
+
+document.getElementById('btnExportCsv')?.addEventListener('click', () => {
+  if (!cachedNewsletterEmails.length) return;
+  // Brevo import format: μία στήλη EMAIL
+  const csv = 'EMAIL\n' + cachedNewsletterEmails.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `newsletter-emails-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
 
 // ===== ACTIONS =====
 // ===== ΔΡΑΣΕΙΣ: multi-upload έως 4 φωτογραφίες =====

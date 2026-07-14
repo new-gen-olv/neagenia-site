@@ -130,5 +130,22 @@ service cloud.firestore {
       allow create: if true;
       allow read, update, delete: if isAdmin();
     }
+
+    // ===== SPONSORS =====
+    // Δημόσια ανάγνωση (σελίδα χορηγών) — διαχείριση μόνο από admin.
+    match /sponsors/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ===== NEWSLETTER =====
+    // Ο καθένας μπορεί να εγγραφεί (create με doc ID = email).
+    // Δεν επιτρέπεται update: έτσι η διπλοεγγραφή απορρίπτεται
+    // και κανείς δεν μπορεί να πειράξει υπάρχουσα εγγραφή.
+    match /newsletter/{email} {
+      allow create: if request.resource.data.email is string
+                    && request.resource.data.email == email;
+      allow read, update, delete: if isAdmin();
+    }
   }
 }
