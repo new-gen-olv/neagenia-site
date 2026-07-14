@@ -754,11 +754,7 @@ section[id] { scroll-margin-top: 70px; }
 .newsletter-row input[type="email"]:focus { outline: none; border-color: var(--primary); }
 .newsletter-row .btn { white-space: nowrap; }
 
-/* ===== ΧΟΡΗΓΟΙ — λωρίδα στην αρχική ===== */
-#sponsors { background: var(--text); }
-#sponsors .section-title { color: var(--white); }
-.sponsors-strip-inner { text-align: center; }
-.sponsors-strip-inner .section-divider { margin-left: auto; margin-right: auto; }
+/* ===== ΧΟΡΗΓΟΙ ===== */
 .digital-sponsor-banner {
   display: block; max-width: 620px; margin: 0 auto;
   border-radius: var(--radius); overflow: hidden;
@@ -772,7 +768,6 @@ section[id] { scroll-margin-top: 70px; }
   border-color: rgba(59,125,181,0.5);
 }
 .digital-sponsor-banner img { width: 100%; display: block; }
-.sponsors-strip-cta { margin-top: 32px; }
 
 /* ===== ΣΕΛΙΔΑ ΧΟΡΗΓΩΝ ===== */
 .sponsors-main { padding-top: 64px; min-height: 100vh; background: var(--bg); }

@@ -1,0 +1,16 @@
+{
+  "name": "Νέα Γενιά «Πράξις» Ολυμπιακού Χωριού",
+  "short_name": "Νέα Γενιά Πράξις",
+  "description": "Εθελοντική ομάδα στο Ολυμπιακό Χωριό Αχαρνών. Δράσεις, νέα, ανακοινώσεις και συμμετοχή.",
+  "lang": "el",
+  "start_url": "./index.html?src=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FAF7F2",
+  "theme_color": "#F4A82C",
+  "icons": [
+    { "src": "Assets/Images/pwa-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "Assets/Images/pwa-icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "Assets/Images/pwa-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
