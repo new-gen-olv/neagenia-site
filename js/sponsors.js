@@ -10,7 +10,7 @@ const translations = {
   el: {
     sp_back: '← Αρχική',
     sp_title: 'Οι <span>Χορηγοί</span> μας',
-    sp_sub: 'Ευχαριστούμε θερμά τις επιχειρήσεις και τους ανθρώπους που στηρίζουν έμπρακτα το έργο της ομάδας μας. Χάρη σε αυτούς, κάθε δράση μας γίνεται πραγματικότητα.',
+    sp_sub: 'Πίσω από κάθε δράση της ομάδας μας υπάρχουν επιχειρήσεις και άνθρωποι που πιστεύουν στο έργο μας και το στηρίζουν έμπρακτα. Οι χορηγοί μας δεν προσφέρουν απλώς μια χορηγία: <strong>γίνονται συνοδοιπόροι</strong> σε κάθε παγκάκι που βάφεται, σε κάθε μάθημα που γίνεται, σε κάθε χαμόγελο που γεννιέται στη γειτονιά. Τους ευχαριστούμε θερμά.',
     sp_digital_title: 'Επίσημος Ψηφιακός Χορηγός',
     sp_digital_caption: 'Η DG Group σχεδίασε, ανέπτυξε και συντηρεί δωρεάν την ψηφιακή παρουσία της ομάδας μας.',
     sp_cta_title: 'Θέλεις να γίνεις χορηγός;',
@@ -31,7 +31,7 @@ const translations = {
   en: {
     sp_back: '← Home',
     sp_title: 'Our <span>Sponsors</span>',
-    sp_sub: 'A heartfelt thank you to the businesses and people who actively support our team\'s work. Thanks to them, every action of ours becomes reality.',
+    sp_sub: 'Behind every action of our team there are businesses and people who believe in our work and support it in practice. Our sponsors don\'t just offer sponsorship: <strong>they walk alongside us</strong>, in every bench repainted, every lesson taught, every smile born in the neighborhood. We thank them warmly.',
     sp_digital_title: 'Official Digital Sponsor',
     sp_digital_caption: 'DG Group designed, developed and maintains our team\'s digital presence free of charge.',
     sp_cta_title: 'Want to become a sponsor?',
