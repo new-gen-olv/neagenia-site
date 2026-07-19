@@ -5,7 +5,8 @@ const firebaseConfig = {
   projectId: "nea-genia-olympiakou-choriou",
   storageBucket: "nea-genia-olympiakou-choriou.firebasestorage.app",
   messagingSenderId: "820215884122",
-  appId: "1:820215884122:web:d1b5d301b29e40eab86b63"
+  appId: "1:820215884122:web:d1b5d301b29e40eab86b63",
+  measurementId: "G-C2K3L6Q80X"
 };
 
 // reCAPTCHA v3 site key — βάλε το πραγματικό από Google reCAPTCHA console
