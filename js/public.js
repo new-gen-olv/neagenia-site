@@ -323,11 +323,15 @@ async function loadActions() {
     const q = query(
       collection(db, 'actions'),
       where('status', '==', 'published'),
-      orderBy('order'),
       limit(50)
     );
     const snap = await getDocs(q);
-    cachedActions = snap.empty ? SEED_ACTIONS : snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Ταξινόμηση client-side ανά ημερομηνία (πιο πρόσφατη πρώτη) — χωρίς
+    // orderBy ώστε να μη χρειάζεται composite index και να μη χάνονται
+    // παλιές δράσεις χωρίς publishedAt.
+    const actionDate = a => (a.publishedAt?.toMillis?.() || a.createdAt?.toMillis?.() || 0);
+    cachedActions = snap.empty ? SEED_ACTIONS
+      : snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => actionDate(b) - actionDate(a));
   } catch {
     cachedActions = SEED_ACTIONS;
   }

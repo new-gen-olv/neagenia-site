@@ -888,12 +888,22 @@ async function loadNewsletter() {
 document.getElementById('btnCopyEmails')?.addEventListener('click', async () => {
   const btn = document.getElementById('btnCopyEmails');
   if (!cachedNewsletterEmails.length) { btn.textContent = 'Δεν υπάρχουν emails'; setTimeout(() => btn.textContent = '📋 Αντιγραφή όλων των emails', 2000); return; }
+  const text = cachedNewsletterEmails.join(', ');
+  let ok = false;
   try {
-    await navigator.clipboard.writeText(cachedNewsletterEmails.join(', '));
-    btn.textContent = `✓ Αντιγράφηκαν ${cachedNewsletterEmails.length} emails`;
+    await navigator.clipboard.writeText(text);
+    ok = true;
   } catch {
-    btn.textContent = 'Αποτυχία αντιγραφής';
+    // Fallback για http / παλιούς browsers (το Clipboard API θέλει HTTPS)
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { ok = document.execCommand('copy'); } catch {}
+    document.body.removeChild(ta);
   }
+  btn.textContent = ok ? `✓ Αντιγράφηκαν ${cachedNewsletterEmails.length} emails` : 'Αποτυχία αντιγραφής';
   setTimeout(() => btn.textContent = '📋 Αντιγραφή όλων των emails', 2500);
 });
 
@@ -969,17 +979,20 @@ async function loadActionsAdmin() {
   const el = document.getElementById('actionsList');
   if (!el) return;
   const q = currentRole === 'admin'
-    ? query(collection(db, 'actions'), orderBy('order'), limit(50))
-    : query(collection(db, 'actions'), where('authorUid', '==', currentUser.uid), orderBy('order'));
+    ? query(collection(db, 'actions'), limit(50))
+    : query(collection(db, 'actions'), where('authorUid', '==', currentUser.uid));
   const snap = await getDocs(q);
   if (snap.empty) { el.innerHTML = '<p style="color:#888;">Δεν υπάρχουν δράσεις.</p>'; return; }
+  // Ίδια ταξινόμηση με το δημόσιο site: ανά ημερομηνία, πιο πρόσφατη πρώτη
+  const actDate = a => (a.publishedAt?.toMillis?.() || a.createdAt?.toMillis?.() || 0);
+  const rows = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => actDate(b) - actDate(a));
   el.innerHTML = `<table class="content-table">
     <thead><tr><th>#</th><th>Τίτλος (ΕΛ)</th><th>Κατηγορία</th><th>Κατάσταση</th><th>Ενέργειες</th></tr></thead>
-    <tbody>${snap.docs.map(d => {
-      const data = d.data();
+    <tbody>${rows.map((data, i) => {
+      const d = { id: data.id };
       const canEdit = currentRole === 'admin' || data.authorUid === currentUser.uid;
       return `<tr>
-        <td>${data.order}</td>
+        <td>${i + 1}</td>
         <td><strong>${data.icon || ''} ${data.titleEl}</strong></td>
         <td style="font-size:0.82rem;color:#666;">${data.category || ''}</td>
         <td>${statusBadge(data.status)}</td>
@@ -1011,7 +1024,6 @@ async function startEditAction(id) {
   document.getElementById('actionDescEn').value = d.descEn || '';
   document.getElementById('actionCategory').value = d.category || 'Δημόσιος χώρος';
   document.getElementById('actionIcon').value = d.icon || '';
-  document.getElementById('actionOrder').value = d.order || 10;
   document.getElementById('actionSocialUrl').value = d.socialUrl || '';
   document.getElementById('actionFormTitle').textContent = 'Επεξεργασία Δράσης';
   document.getElementById('btnCancelAction').style.display = 'inline-block';
@@ -1028,7 +1040,6 @@ document.getElementById('btnCancelAction').addEventListener('click', () => {
   pendingActionFiles = [];
   ['actionTitleEl','actionTitleEn','actionDescEl','actionDescEn','actionIcon','actionSocialUrl'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('actionCategory').value = 'Δημόσιος χώρος';
-  document.getElementById('actionOrder').value = 10;
   document.getElementById('actionFormTitle').textContent = 'Νέα Δράση';
   document.getElementById('btnCancelAction').style.display = 'none';
   document.getElementById('actionError').style.display = 'none';
@@ -1044,7 +1055,6 @@ document.getElementById('btnSubmitAction').addEventListener('click', async () =>
   const descEn  = document.getElementById('actionDescEn').value.trim();
   const category = document.getElementById('actionCategory').value;
   const icon  = document.getElementById('actionIcon').value.trim();
-  const order = parseInt(document.getElementById('actionOrder').value) || 10;
   const errEl = document.getElementById('actionError');
   errEl.style.display = 'none';
 
@@ -1069,7 +1079,7 @@ document.getElementById('btnSubmitAction').addEventListener('click', async () =>
     const socialUrl = document.getElementById('actionSocialUrl').value.trim();
 
     const payload = {
-      titleEl, titleEn, descEl, descEn, category, icon, order,
+      titleEl, titleEn, descEl, descEn, category, icon,
       images: finalImages,
       imageUrl: finalImages[0] || '',
       socialUrl,
