@@ -190,6 +190,7 @@ if (inquiryForm) {
                            : 'Thank you for your interest in supporting our team\'s work! We received your details and will get in touch with you soon.'
         });
       } catch { /* silent */ }
+      if (window.gtag) window.gtag('event', 'sponsor_inquiry');
       sucEl.style.display = 'block';
       inquiryForm.reset();
     } catch {

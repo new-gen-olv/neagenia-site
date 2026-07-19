@@ -694,6 +694,7 @@ document.getElementById('contactForm').addEventListener('submit', async e => {
       });
     } catch { /* silent */ }
     sendAutoReply('contact', name, email);
+    if (window.gtag) window.gtag('event', 'contact_submit');
     showSuccess(sucEl);
     form.reset();
   } catch {
@@ -737,6 +738,7 @@ document.getElementById('volunteerForm').addEventListener('submit', async e => {
     } catch { /* silent */ }
     sendAutoReply('volunteer', name, email);
     sendVolunteerToSheet({ name, email, phone, interests: checked.join(', '), message });
+    if (window.gtag) window.gtag('event', 'volunteer_submit');
     showSuccess(sucEl);
     form.reset();
   } catch {
@@ -771,6 +773,7 @@ if (newsletterForm) {
         lang: currentLang,
         createdAt: serverTimestamp()
       });
+      if (window.gtag) window.gtag('event', 'newsletter_signup');
       showSuccess(sucEl);
       newsletterForm.reset();
     } catch (err) {
