@@ -34,6 +34,17 @@ function setOg(prop, content) {
   if (!m) { m = document.createElement('meta'); m.setAttribute('property', prop); document.head.appendChild(m); }
   m.setAttribute('content', content);
 }
+function setCanonical(url) {
+  let l = document.querySelector('link[rel="canonical"]');
+  if (!l) { l = document.createElement('link'); l.setAttribute('rel', 'canonical'); document.head.appendChild(l); }
+  l.setAttribute('href', url);
+}
+function setJsonLd(data) {
+  const s = document.createElement('script');
+  s.type = 'application/ld+json';
+  s.textContent = JSON.stringify(data);
+  document.head.appendChild(s);
+}
 
 function descToHtml(text) {
   return (text || '')
@@ -64,10 +75,31 @@ async function load() {
     const [mainImg, ...restImgs] = images;
 
     // Δυναμικά meta για SEO και social share ανά δράση
+    const pageUrl = `https://neageniaolv.org/action.html?id=${encodeURIComponent(id)}`;
     setMeta('description', (desc || '').slice(0, 160));
     setOg('og:title', title);
     setOg('og:description', (desc || '').slice(0, 160));
+    setOg('og:url', pageUrl);
     if (mainImg) setOg('og:image', mainImg);
+    setCanonical(pageUrl);
+
+    const published = d.publishedAt || d.createdAt;
+    setJsonLd({
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: title,
+      description: (desc || '').slice(0, 160),
+      url: pageUrl,
+      image: images.length ? images : 'https://neageniaolv.org/Assets/Images/background.jpg',
+      datePublished: published && published.toDate ? published.toDate().toISOString() : undefined,
+      inLanguage: lang,
+      author: { '@type': 'Organization', name: 'Νέα Γενιά «Πράξις» Ολυμπιακού Χωριού' },
+      publisher: {
+        '@type': 'Organization',
+        name: 'Νέα Γενιά «Πράξις» Ολυμπιακού Χωριού',
+        logo: { '@type': 'ImageObject', url: 'https://neageniaolv.org/Assets/Images/logo.png' }
+      }
+    });
 
     el.innerHTML = `
       ${mainImg ? `<img src="${mainImg}" alt="${title}" class="article-cover-img action-photo" style="cursor:pointer;" />` : ''}

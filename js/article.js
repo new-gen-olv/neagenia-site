@@ -52,6 +52,34 @@ async function load() {
     setOg('og:title', d.title);
     if (d.coverImageUrl) setOg('og:image', d.coverImageUrl);
 
+    // Canonical + og:url + JSON-LD Article schema για SEO
+    const pageUrl = `https://neageniaolv.org/article.html?col=${encodeURIComponent(col)}&id=${encodeURIComponent(id)}`;
+    setOg('og:url', pageUrl);
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) { canonical = document.createElement('link'); canonical.setAttribute('rel', 'canonical'); document.head.appendChild(canonical); }
+    canonical.setAttribute('href', pageUrl);
+
+    const published = d.publishedAt || d.createdAt;
+    const ld = document.createElement('script');
+    ld.type = 'application/ld+json';
+    ld.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': col === 'announcements' ? 'NewsArticle' : 'Article',
+      headline: d.title,
+      description: plain || undefined,
+      url: pageUrl,
+      image: d.coverImageUrl || 'https://neageniaolv.org/Assets/Images/background.jpg',
+      datePublished: published && published.toDate ? published.toDate().toISOString() : undefined,
+      inLanguage: 'el',
+      author: { '@type': d.authorName ? 'Person' : 'Organization', name: d.authorName || 'Νέα Γενιά «Πράξις» Ολυμπιακού Χωριού' },
+      publisher: {
+        '@type': 'Organization',
+        name: 'Νέα Γενιά «Πράξις» Ολυμπιακού Χωριού',
+        logo: { '@type': 'ImageObject', url: 'https://neageniaolv.org/Assets/Images/logo.png' }
+      }
+    });
+    document.head.appendChild(ld);
+
     el.innerHTML = `
       ${d.coverImageUrl ? `<img src="${d.coverImageUrl}" alt="${d.title}" class="article-cover-img" />` : ''}
       <h1 class="article-detail-title">${d.title}</h1>
