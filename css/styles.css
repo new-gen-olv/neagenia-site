@@ -820,10 +820,12 @@ section[id] { scroll-margin-top: 70px; }
   text-transform: uppercase; letter-spacing: 0.05em; color: var(--text);
   display: flex; align-items: center; gap: 12px;
 }
+.sponsor-tier-title::before,
 .sponsor-tier-title::after {
   content: ''; flex: 1; height: 2px; background: var(--gray-light); border-radius: 2px;
 }
 .sponsor-tier-title.gold { color: var(--primary-dark); }
+.sponsor-tier-title.gold::before,
 .sponsor-tier-title.gold::after { background: var(--primary); opacity: 0.4; }
 
 .sponsor-tier-block { margin-bottom: 48px; padding: 0; }
