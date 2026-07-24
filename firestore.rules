@@ -138,6 +138,29 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // ===== SITE TRAFFIC (js/traffic.js) — pageviews/unique visitors, 1 doc ανά ημέρα =====
+    // Public write (και ανώνυμοι επισκέπτες), αλλά ΜΟΝΟ increment-style updates
+    // στα 4 επιτρεπτά fields. Read μόνο admin (για το panel).
+    match /analytics/{day} {
+      function trafficDocValid() {
+        return request.resource.data.keys()
+                 .hasOnly(['totalViews', 'uniqueVisitors', 'pageBreakdown', 'lastUpdated'])
+               && request.resource.data.totalViews is int
+               && (!('uniqueVisitors' in request.resource.data)
+                   || request.resource.data.uniqueVisitors is int)
+               && (!('pageBreakdown' in request.resource.data)
+                   || request.resource.data.pageBreakdown is map);
+      }
+      allow read, delete: if isAdmin();
+      allow create: if day.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+                    && trafficDocValid();
+      allow update: if day.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+                    && trafficDocValid()
+                    && request.resource.data.totalViews >= resource.data.get('totalViews', 0)
+                    && request.resource.data.get('uniqueVisitors', 0)
+                       >= resource.data.get('uniqueVisitors', 0);
+    }
+
     // ===== NEWSLETTER =====
     // Ο καθένας μπορεί να εγγραφεί (create με doc ID = email).
     // Δεν επιτρέπεται update: έτσι η διπλοεγγραφή απορρίπτεται

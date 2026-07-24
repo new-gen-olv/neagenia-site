@@ -10,6 +10,28 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* Επισκεψιμότητα */
+    .traffic-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    .traffic-stat {
+      background: var(--white); border: 1px solid #eee; border-radius: var(--radius);
+      padding: 16px; text-align: center; box-shadow: var(--shadow);
+    }
+    .traffic-num { font-size: 1.5rem; font-weight: 800; color: var(--blue); margin: 0; }
+    .traffic-label { font-size: 0.72rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.05em; margin: 6px 0 0; }
+    .traffic-legend { display: flex; gap: 18px; font-size: 0.78rem; color: var(--gray); margin-bottom: 8px; }
+    .traffic-legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+    .dot-views { background: var(--blue); }
+    .dot-unique { background: var(--primary-dark); }
+    .traffic-chart-wrap { overflow-x: auto; }
+    .traffic-chart-wrap svg { width: 100%; min-width: 520px; height: auto; display: block; }
+    .traffic-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    .traffic-table th { text-align: left; padding: 9px 12px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray); border-bottom: 1.5px solid #eee; }
+    .traffic-table td { padding: 9px 12px; border-bottom: 1px solid #f0ebe3; }
+    .traf-bar-track { background: var(--gray-light); border-radius: 999px; height: 8px; overflow: hidden; min-width: 60px; }
+    .traf-bar-fill { background: var(--blue); height: 100%; border-radius: 999px; }
+    @media (max-width: 700px) { .traffic-stats { grid-template-columns: repeat(2, 1fr); } }
+  </style>
 </head>
 <body class="admin-page">
 
@@ -38,6 +60,7 @@
   <button data-panel="volunteers" class="admin-only-tab">Εθελοντές <span class="badge" data-badge="volunteers" style="display:none">0</span></button>
   <button data-panel="messages" class="admin-only-tab">Μηνύματα <span class="badge" data-badge="messages" style="display:none">0</span></button>
   <button data-panel="newsletter" class="admin-only-tab">Newsletter</button>
+  <button data-panel="traffic" class="admin-only-tab">Επισκεψιμότητα</button>
   <button data-panel="members" class="admin-only-tab">Μέλη</button>
 </div>
 
@@ -55,6 +78,7 @@
     <div class="tab-item admin-only-tab" data-panel="volunteers">🙋 Εθελοντές <span class="badge" data-badge="volunteers" style="display:none">0</span></div>
     <div class="tab-item admin-only-tab" data-panel="messages">✉️ Μηνύματα <span class="badge" data-badge="messages" style="display:none">0</span></div>
     <div class="tab-item admin-only-tab" data-panel="newsletter">📬 Newsletter</div>
+    <div class="tab-item admin-only-tab" data-panel="traffic">📈 Επισκεψιμότητα</div>
     <div class="tab-item admin-only-tab" data-panel="members">👥 Μέλη</div>
   </aside>
 
@@ -283,6 +307,35 @@
         <button class="btn btn-sm btn-primary" id="btnExportCsv">⬇ Λήψη CSV (για Brevo)</button>
       </p>
       <div id="newsletterList"><div class="spinner"></div></div>
+    </section>
+
+    <!-- Επισκεψιμότητα (admin only) -->
+    <section class="admin-panel" id="panel-traffic">
+      <h2>Επισκεψιμότητα</h2>
+      <p style="font-size:0.85rem;color:#888;margin-bottom:16px;">
+        Προβολές σελίδων και μοναδικοί επισκέπτες του neageniaolv.org (τελευταίες 30 ημέρες).
+      </p>
+      <div class="traffic-stats">
+        <div class="traffic-stat"><p class="traffic-num" id="trafToday">—</p><p class="traffic-label">Views σήμερα</p></div>
+        <div class="traffic-stat"><p class="traffic-num" id="trafUniqueToday">—</p><p class="traffic-label">Μοναδικοί σήμερα</p></div>
+        <div class="traffic-stat"><p class="traffic-num" id="trafWeek">—</p><p class="traffic-label">Views 7 ημερών</p></div>
+        <div class="traffic-stat"><p class="traffic-num" id="trafMonth">—</p><p class="traffic-label">Views 30 ημερών</p></div>
+      </div>
+      <div class="admin-form" style="margin-bottom:20px;">
+        <h3>Τελευταίες 30 ημέρες</h3>
+        <div class="traffic-legend">
+          <span><i class="dot dot-views"></i> Προβολές</span>
+          <span><i class="dot dot-unique"></i> Μοναδικοί επισκέπτες</span>
+        </div>
+        <div class="traffic-chart-wrap" id="trafChart"><div class="spinner"></div></div>
+      </div>
+      <div class="admin-form">
+        <h3>Δημοφιλέστερες σελίδες (30 ημέρες)</h3>
+        <table class="traffic-table" id="trafPagesTable">
+          <thead><tr><th>Σελίδα</th><th>Views</th><th style="width:40%;"></th></tr></thead>
+          <tbody><tr><td colspan="3" style="text-align:center;color:#888;">Φόρτωση...</td></tr></tbody>
+        </table>
+      </div>
     </section>
 
     <!-- Μέλη (admin only) -->

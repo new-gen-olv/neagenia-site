@@ -6,7 +6,8 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import {
   collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc,
-  query, where, orderBy, serverTimestamp, limit
+  query, where, orderBy, serverTimestamp, limit,
+  documentId, startAt, endAt
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 // ===== STATE =====
@@ -51,6 +52,7 @@ onAuthStateChanged(auth, async user => {
     loadMembers();
     loadSponsorsAdmin();
     loadNewsletter();
+    loadTraffic();
   }
 });
 
@@ -1106,3 +1108,141 @@ document.getElementById('btnSubmitAction').addEventListener('click', async () =>
     btn.disabled = false; btn.textContent = 'Αποθήκευση';
   }
 });
+
+// ===== ΕΠΙΣΚΕΨΙΜΟΤΗΤΑ (collection "analytics" — 1 doc ανά ημέρα από το js/traffic.js) =====
+
+const PAGE_LABELS = {
+  'index':    'Αρχική',
+  'action':   'Σελίδα δράσης',
+  'article':  'Σελίδα άρθρου',
+  'sponsors': 'Χορηγοί',
+  'login':    'Login',
+  '404':      'Σελίδα 404'
+};
+
+function escTraffic(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+function trafficDayKeys(n) {
+  const keys = [];
+  const now = new Date();
+  const pad2 = x => (x < 10 ? '0' : '') + x;
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    keys.push(d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()));
+  }
+  return keys;
+}
+
+async function loadTraffic() {
+  const chartEl = document.getElementById('trafChart');
+  if (!chartEl) return;
+  const keys = trafficDayKeys(30);
+  try {
+    const snap = await getDocs(query(
+      collection(db, 'analytics'),
+      orderBy(documentId()),
+      startAt(keys[0]),
+      endAt(keys[keys.length - 1])
+    ));
+    const byDay = {};
+    snap.forEach(d => { byDay[d.id] = d.data(); });
+    renderTraffic(keys, byDay);
+  } catch (e) {
+    console.warn('[traffic]', e);
+    chartEl.innerHTML = '<p style="text-align:center;color:#888;padding:30px 0;">Δεν ήταν δυνατή η φόρτωση των στατιστικών.</p>';
+  }
+}
+
+function renderTraffic(keys, byDay) {
+  const days = keys.map(k => {
+    const d = byDay[k] || {};
+    return {
+      key:    k,
+      label:  k.substring(8, 10) + '/' + k.substring(5, 7),
+      views:  d.totalViews || 0,
+      unique: d.uniqueVisitors || 0,
+      pages:  d.pageBreakdown || {}
+    };
+  });
+
+  // ── κάρτες ──
+  const today = days[days.length - 1];
+  let week = 0, month = 0;
+  days.forEach((d, i) => {
+    month += d.views;
+    if (i >= days.length - 7) week += d.views;
+  });
+  document.getElementById('trafToday').textContent       = today.views;
+  document.getElementById('trafUniqueToday').textContent = today.unique;
+  document.getElementById('trafWeek').textContent        = week;
+  document.getElementById('trafMonth').textContent       = month;
+
+  // ── γράφημα 30 ημερών (SVG: μπάρες views + γραμμή unique) ──
+  const W = 640, H = 180, padL = 34, padR = 6, padT = 10, padB = 20;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  let maxV = 1;
+  days.forEach(d => { if (d.views > maxV) maxV = d.views; });
+  // στρογγυλοποίηση σε "ωραίο" μέγιστο για τον άξονα
+  const pow = Math.pow(10, String(maxV).length - 1);
+  let niceMax = Math.ceil(maxV / pow) * pow;
+  if (niceMax < 4) niceMax = 4;
+
+  const step = plotW / days.length;
+  const barW = Math.max(4, step * 0.62);
+  const x = i => padL + i * step + (step - barW) / 2;
+  const y = v => padT + plotH * (1 - v / niceMax);
+
+  const BAR  = '#3B7DB5';
+  const LINE = '#E8841A';
+  const GRID = '#e5ded3';
+  const TXT  = '#999';
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Γράφημα επισκεψιμότητας 30 ημερών">`;
+  [0.5, 1].forEach(f => {
+    const gy = y(niceMax * f);
+    svg += `<line x1="${padL}" y1="${gy}" x2="${W - padR}" y2="${gy}" stroke="${GRID}" stroke-width="1" stroke-dasharray="3 3"/>`;
+    svg += `<text x="${padL - 6}" y="${gy + 4}" text-anchor="end" font-size="10" fill="${TXT}">${niceMax * f}</text>`;
+  });
+  svg += `<line x1="${padL}" y1="${padT + plotH}" x2="${W - padR}" y2="${padT + plotH}" stroke="${GRID}" stroke-width="1"/>`;
+  days.forEach((d, i) => {
+    const bh = plotH * (d.views / niceMax);
+    svg += `<rect x="${x(i)}" y="${padT + plotH - bh}" width="${barW}" height="${bh}" rx="2" fill="${BAR}" opacity="0.85">` +
+           `<title>${d.label} · ${d.views} προβολές · ${d.unique} μοναδικοί</title></rect>`;
+    if (i % 5 === 0 || i === days.length - 1) {
+      svg += `<text x="${x(i) + barW / 2}" y="${H - 5}" text-anchor="middle" font-size="9" fill="${TXT}">${d.label}</text>`;
+    }
+  });
+  const pts = days.map((d, i) => (x(i) + barW / 2) + ',' + y(d.unique)).join(' ');
+  svg += `<polyline points="${pts}" fill="none" stroke="${LINE}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  days.forEach((d, i) => {
+    svg += `<circle cx="${x(i) + barW / 2}" cy="${y(d.unique)}" r="2.2" fill="${LINE}">` +
+           `<title>${d.label} · ${d.unique} μοναδικοί</title></circle>`;
+  });
+  svg += '</svg>';
+  document.getElementById('trafChart').innerHTML = svg;
+
+  // ── top σελίδες 30 ημερών ──
+  const agg = {};
+  days.forEach(d => {
+    Object.keys(d.pages).forEach(p => {
+      if (typeof d.pages[p] === 'number') agg[p] = (agg[p] || 0) + d.pages[p];
+    });
+  });
+  const arr = Object.keys(agg).map(p => ({ page: p, views: agg[p] }));
+  arr.sort((a, b) => b.views - a.views);
+  const tbody = document.querySelector('#trafPagesTable tbody');
+  if (!arr.length) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#888;">Καμία καταγραφή ακόμα.</td></tr>';
+    return;
+  }
+  const maxP = arr[0].views;
+  tbody.innerHTML = arr.slice(0, 10).map(r => {
+    const label = PAGE_LABELS[r.page] || r.page;
+    const pct = Math.max(3, Math.round(r.views / maxP * 100));
+    return `<tr><td>${escTraffic(label)}</td><td>${r.views}</td>` +
+           `<td><div class="traf-bar-track"><div class="traf-bar-fill" style="width:${pct}%;"></div></div></td></tr>`;
+  }).join('');
+}
