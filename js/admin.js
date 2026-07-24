@@ -991,7 +991,7 @@ async function loadActionsAdmin() {
   const actDate = a => (a.publishedAt?.toMillis?.() || a.createdAt?.toMillis?.() || 0);
   const rows = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => actDate(b) - actDate(a));
   el.innerHTML = `<table class="content-table">
-    <thead><tr><th>#</th><th>Τίτλος (ΕΛ)</th><th>Κατηγορία</th><th>Κατάσταση</th><th>Ενέργειες</th></tr></thead>
+    <thead><tr><th>#</th><th>Τίτλος (ΕΛ)</th><th>Κατηγορία</th><th>Κατάσταση</th><th>👁 Προβολές</th><th>Ενέργειες</th></tr></thead>
     <tbody>${rows.map((data, i) => {
       const d = { id: data.id };
       const canEdit = currentRole === 'admin' || data.authorUid === currentUser.uid;
@@ -1000,6 +1000,7 @@ async function loadActionsAdmin() {
         <td><strong>${data.icon || ''} ${data.titleEl}</strong></td>
         <td style="font-size:0.82rem;color:#666;">${data.category || ''}</td>
         <td>${statusBadge(data.status)}</td>
+        <td style="font-size:0.82rem;color:#666;">${data.viewCount || 0}</td>
         <td style="display:flex;gap:6px;flex-wrap:wrap;">
           ${canEdit ? `<button class="btn btn-sm btn-blue" data-edit-act="${d.id}">Επεξ.</button>` : ''}
           ${canEdit ? `<button class="btn btn-sm btn-danger" data-del-act="${d.id}">Διαγρ.</button>` : ''}
@@ -1255,13 +1256,15 @@ async function loadTopArticles() {
   const tbody = document.querySelector('#trafArticlesTable tbody');
   if (!tbody) return;
   try {
-    const [artSnap, annSnap] = await Promise.all([
+    const [artSnap, annSnap, actSnap] = await Promise.all([
       getDocs(query(collection(db, 'articles'), orderBy('viewCount', 'desc'), limit(5))),
-      getDocs(query(collection(db, 'announcements'), orderBy('viewCount', 'desc'), limit(5)))
+      getDocs(query(collection(db, 'announcements'), orderBy('viewCount', 'desc'), limit(5))),
+      getDocs(query(collection(db, 'actions'), orderBy('viewCount', 'desc'), limit(5)))
     ]);
     const rows = [];
     artSnap.forEach(d => rows.push({ title: d.data().title, type: 'Άρθρο', views: d.data().viewCount || 0 }));
     annSnap.forEach(d => rows.push({ title: d.data().title, type: 'Ανακοίνωση', views: d.data().viewCount || 0 }));
+    actSnap.forEach(d => rows.push({ title: d.data().titleEl, type: 'Δράση', views: d.data().viewCount || 0 }));
     const top = rows.filter(r => r.views > 0).sort((a, b) => b.views - a.views).slice(0, 8);
     if (!top.length) {
       tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#888;">Καμία προβολή άρθρου ακόμα.</td></tr>';

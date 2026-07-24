@@ -72,16 +72,17 @@ function record() {
     .catch(() => {}); // σιωπηλή αποτυχία — το tracking δεν σπάει ποτέ τη σελίδα
 }
 
-// ── Μετρητής προβολών ανά άρθρο/ανακοίνωση (viewCount πάνω στο ίδιο το doc) ──
-// Τρέχει μόνο στο article.html (?id=...&col=articles|announcements).
+// ── Μετρητής προβολών ανά άρθρο/ανακοίνωση/δράση (viewCount πάνω στο ίδιο το doc) ──
+// Τρέχει στο article.html (?id=...&col=articles|announcements) και στο action.html (?id=...).
 // Τα rules επιτρέπουν δημόσιο update ΜΟΝΟ του viewCount, μόνο +1, μόνο σε published.
 function recordArticleView() {
-  if (pageKey() !== 'article') return;
+  const page = pageKey();
+  if (page !== 'article' && page !== 'action') return;
   const params = new URLSearchParams(location.search);
   const id = params.get('id');
-  const col = params.get('col') || 'articles';
+  const col = page === 'action' ? 'actions' : (params.get('col') || 'articles');
   if (!id || !/^[A-Za-z0-9_-]{1,60}$/.test(id)) return;
-  if (col !== 'articles' && col !== 'announcements') return;
+  if (col !== 'articles' && col !== 'announcements' && col !== 'actions') return;
 
   // Guard: 1 προβολή ανά άρθρο ανά session
   const sessionKey = 'ng_av_' + col + '_' + id;

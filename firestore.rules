@@ -125,7 +125,13 @@ service cloud.firestore {
                     || (isAuthor()
                         && resource.data.authorUid == request.auth.uid
                         && !('status' in request.resource.data.diff(resource.data).affectedKeys().intersection(['status']))
-                        );
+                        )
+                    // Δημόσιος μετρητής προβολών (js/traffic.js): ΜΟΝΟ το viewCount,
+                    // ΜΟΝΟ αύξηση, ΜΟΝΟ σε δημοσιευμένες δράσεις.
+                    || (resource.data.status == 'published'
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount'])
+                        && request.resource.data.viewCount is int
+                        && request.resource.data.viewCount > resource.data.get('viewCount', 0));
 
       allow delete: if isAdmin()
                     || (isAuthor() && resource.data.authorUid == request.auth.uid);
