@@ -101,9 +101,64 @@ async function markTabRead(panel) {
 
 // ===== EDITOR TOOLBAR (μορφοποίηση κειμένου άρθρων/ανακοινώσεων) =====
 // Επικεφαλίδα: "## ", υπο-επικεφαλίδα: "### ", έντονα: **κείμενο**, υπογράμμιση: __κείμενο__
+// Emoji: εισαγωγή στο σημείο του κέρσορα. Εικόνα/GIF: upload στο ImgBB, το URL σε δική του γραμμή.
+const EDITOR_EMOJI = ['😀','😄','😊','🙂','😉','😍','🥳','😎','🤗','🙏','👏','💪','🤝','❤️','🧡','💙','💚','⭐','✨','🔥','🎉','🎊','🏆','⚽','🏀','🎨','🎭','🎵','📣','📢','📅','📍','🌈','☀️','🌳','🍀','✅','➡️','⚠️','ℹ️'];
+
+function insertAtCursor(ta, text) {
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  ta.value = ta.value.slice(0, start) + text + ta.value.slice(end);
+  ta.focus();
+  ta.setSelectionRange(start + text.length, start + text.length);
+}
+
 document.querySelectorAll('.editor-toolbar').forEach(toolbar => {
   const ta = document.getElementById(toolbar.dataset.target);
   if (!ta) return;
+
+  // Emoji palette (κρυφό μέχρι να πατηθεί το κουμπί)
+  const palette = document.createElement('div');
+  palette.className = 'emoji-palette';
+  palette.style.display = 'none';
+  EDITOR_EMOJI.forEach(em => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = em;
+    b.addEventListener('click', () => insertAtCursor(ta, em));
+    palette.appendChild(b);
+  });
+  toolbar.insertAdjacentElement('afterend', palette);
+
+  // Κρυφό file input για εικόνα/GIF μέσα στο κείμενο
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*,.gif';
+  fileInput.style.display = 'none';
+  toolbar.appendChild(fileInput);
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files[0];
+    fileInput.value = '';
+    if (!file) return;
+    const imgBtn = toolbar.querySelector('[data-format="image"]');
+    const oldLabel = imgBtn.innerHTML;
+    imgBtn.disabled = true;
+    imgBtn.textContent = '⏳ Ανέβασμα...';
+    try {
+      const url = await uploadToImgBB(file);
+      const start = ta.selectionStart;
+      const val = ta.value;
+      const before = val.slice(0, start);
+      const after = val.slice(ta.selectionEnd);
+      const prefix = before && !before.endsWith('\n\n') ? (before.endsWith('\n') ? '\n' : '\n\n') : '';
+      const suffix = after && !after.startsWith('\n\n') ? (after.startsWith('\n') ? '\n' : '\n\n') : '';
+      insertAtCursor(ta, prefix + url + suffix);
+    } catch (err) {
+      alert(err.message || 'Αποτυχία ανεβάσματος εικόνας');
+    } finally {
+      imgBtn.disabled = false;
+      imgBtn.innerHTML = oldLabel;
+    }
+  });
+
   toolbar.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => {
       const fmt = btn.dataset.format;
@@ -111,7 +166,11 @@ document.querySelectorAll('.editor-toolbar').forEach(toolbar => {
       const val = ta.value;
       const sel = val.slice(start, end);
 
-      if (fmt === 'bold' || fmt === 'underline') {
+      if (fmt === 'emoji') {
+        palette.style.display = palette.style.display === 'none' ? 'flex' : 'none';
+      } else if (fmt === 'image') {
+        fileInput.click();
+      } else if (fmt === 'bold' || fmt === 'underline') {
         const mark = fmt === 'bold' ? '**' : '__';
         const inner = sel || (fmt === 'bold' ? 'έντονο κείμενο' : 'υπογραμμισμένο κείμενο');
         ta.value = val.slice(0, start) + mark + inner + mark + val.slice(end);

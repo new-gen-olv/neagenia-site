@@ -20,6 +20,9 @@ function inlineFormat(t) {
     .replace(/__(.+?)__/g, '<u>$1</u>');
 }
 
+// Γραμμή που είναι σκέτο URL εικόνας/GIF εμφανίζεται ως εικόνα μέσα στο κείμενο
+const IMG_LINE_RE = /^https?:\/\/\S+\.(png|jpe?g|gif|webp)(\?\S*)?$/i;
+
 function bodyToHtml(text) {
   // Γραμμές που ξεκινούν με "## " γίνονται επικεφαλίδες (h2), με "### " υπο-επικεφαλίδες (h3)
   const blocks = (text || '').split('\n\n').filter(b => b.trim());
@@ -31,7 +34,8 @@ function bodyToHtml(text) {
     };
     for (const line of block.split('\n')) {
       const t = line.trim();
-      if (t.startsWith('### ')) { flush(); html += `<h3>${inlineFormat(t.slice(4))}</h3>`; }
+      if (IMG_LINE_RE.test(t)) { flush(); html += `<img src="${t}" alt="" class="article-inline-img" loading="lazy" />`; }
+      else if (t.startsWith('### ')) { flush(); html += `<h3>${inlineFormat(t.slice(4))}</h3>`; }
       else if (t.startsWith('## ')) { flush(); html += `<h2>${inlineFormat(t.slice(3))}</h2>`; }
       else para.push(line);
     }
@@ -56,7 +60,7 @@ async function load() {
     }
     const d = snap.data();
     document.title = `${d.title} | Νέα Γενιά «Πράξις» Ολυμπιακού Χωριού`;
-    const plain = (d.body || '').replace(/^#{2,3}\s+/gm, '').replace(/\*\*|__/g, '').replace(/\s+/g, ' ').trim().slice(0, 160);
+    const plain = (d.body || '').replace(/^https?:\/\/\S+$/gm, '').replace(/^#{2,3}\s+/gm, '').replace(/\*\*|__/g, '').replace(/\s+/g, ' ').trim().slice(0, 160);
     const setMeta = (name, content) => {
       let m = document.querySelector(`meta[name="${name}"]`);
       if (!m) { m = document.createElement('meta'); m.setAttribute('name', name); document.head.appendChild(m); }
