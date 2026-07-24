@@ -82,8 +82,15 @@ document.getElementById('langToggle').addEventListener('click', () => {
 });
 
 // ===== RENDER =====
+// **κείμενο** → έντονα, __κείμενο__ → υπογράμμιση
+function inlineFormat(t) {
+  return (t || '')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/__(.+?)__/g, '<u>$1</u>');
+}
+
 function sponsorCard(d) {
-  const desc = currentLang === 'el' ? (d.descEl || '') : (d.descEn || d.descEl || '');
+  const desc = inlineFormat(currentLang === 'el' ? (d.descEl || '') : (d.descEn || d.descEl || ''));
   const logo = d.logoUrl
     ? `<div class="sponsor-card-logo"><img src="${d.logoUrl}" alt="${d.name}" loading="lazy" /></div>`
     : `<div class="sponsor-card-logo sponsor-logo-fallback"><span>${(d.name || '?').charAt(0).toUpperCase()}</span></div>`;

@@ -128,36 +128,39 @@ document.querySelectorAll('.editor-toolbar').forEach(toolbar => {
   });
   toolbar.insertAdjacentElement('afterend', palette);
 
-  // Κρυφό file input για εικόνα/GIF μέσα στο κείμενο
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = 'image/*,.gif';
-  fileInput.style.display = 'none';
-  toolbar.appendChild(fileInput);
-  fileInput.addEventListener('change', async () => {
-    const file = fileInput.files[0];
-    fileInput.value = '';
-    if (!file) return;
-    const imgBtn = toolbar.querySelector('[data-format="image"]');
-    const oldLabel = imgBtn.innerHTML;
-    imgBtn.disabled = true;
-    imgBtn.textContent = '⏳ Ανέβασμα...';
-    try {
-      const url = await uploadToImgBB(file);
-      const start = ta.selectionStart;
-      const val = ta.value;
-      const before = val.slice(0, start);
-      const after = val.slice(ta.selectionEnd);
-      const prefix = before && !before.endsWith('\n\n') ? (before.endsWith('\n') ? '\n' : '\n\n') : '';
-      const suffix = after && !after.startsWith('\n\n') ? (after.startsWith('\n') ? '\n' : '\n\n') : '';
-      insertAtCursor(ta, prefix + url + suffix);
-    } catch (err) {
-      alert(err.message || 'Αποτυχία ανεβάσματος εικόνας');
-    } finally {
-      imgBtn.disabled = false;
-      imgBtn.innerHTML = oldLabel;
-    }
-  });
+  // Κρυφό file input για εικόνα/GIF μέσα στο κείμενο (μόνο όπου υπάρχει κουμπί εικόνας)
+  const imgBtn = toolbar.querySelector('[data-format="image"]');
+  let fileInput = null;
+  if (imgBtn) {
+    fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*,.gif';
+    fileInput.style.display = 'none';
+    toolbar.appendChild(fileInput);
+    fileInput.addEventListener('change', async () => {
+      const file = fileInput.files[0];
+      fileInput.value = '';
+      if (!file) return;
+      const oldLabel = imgBtn.innerHTML;
+      imgBtn.disabled = true;
+      imgBtn.textContent = '⏳ Ανέβασμα...';
+      try {
+        const url = await uploadToImgBB(file);
+        const start = ta.selectionStart;
+        const val = ta.value;
+        const before = val.slice(0, start);
+        const after = val.slice(ta.selectionEnd);
+        const prefix = before && !before.endsWith('\n\n') ? (before.endsWith('\n') ? '\n' : '\n\n') : '';
+        const suffix = after && !after.startsWith('\n\n') ? (after.startsWith('\n') ? '\n' : '\n\n') : '';
+        insertAtCursor(ta, prefix + url + suffix);
+      } catch (err) {
+        alert(err.message || 'Αποτυχία ανεβάσματος εικόνας');
+      } finally {
+        imgBtn.disabled = false;
+        imgBtn.innerHTML = oldLabel;
+      }
+    });
+  }
 
   toolbar.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -195,6 +198,28 @@ document.querySelectorAll('.editor-toolbar').forEach(toolbar => {
     });
   });
 });
+
+// Παλέτα emoji για το «Εικονίδιο» της δράσης — κλικ και μπαίνει στο πεδίο
+const ACTION_ICON_EMOJI = ['🪑','🌳','🌷','🎨','🖌️','🏫','🚸','🚏','🧹','♻️','💃','🗣️','📚','🎓','📷','⛑️','🩹','🤝','❤️','🎭','🎵','🎤','⚽','🏀','🏐','🎾','🏆','🎉','🎪','🧒','👵','🐕','🌈','☀️','⭐','✨','🔥','💡','🛠️','🌍'];
+(() => {
+  const input = document.getElementById('actionIcon');
+  const pickBtn = document.getElementById('actionIconPick');
+  const palette = document.getElementById('actionIconPalette');
+  if (!input || !pickBtn || !palette) return;
+  ACTION_ICON_EMOJI.forEach(em => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = em;
+    b.addEventListener('click', () => {
+      input.value = em;
+      palette.style.display = 'none';
+    });
+    palette.appendChild(b);
+  });
+  pickBtn.addEventListener('click', () => {
+    palette.style.display = palette.style.display === 'none' ? 'flex' : 'none';
+  });
+})();
 
 // ===== HELPERS =====
 function fmt(ts) {

@@ -197,10 +197,26 @@
           </div>
           <div class="form-group">
             <label>Περιγραφή (ΕΛ)</label>
+            <div class="editor-toolbar" data-target="actionDescEl">
+              <button type="button" data-format="h2" title="Επικεφαλίδα">Επικεφαλίδα</button>
+              <button type="button" data-format="h3" title="Υπο-επικεφαλίδα">Υπο-επικεφαλίδα</button>
+              <button type="button" data-format="bold" title="Έντονα"><b>B</b></button>
+              <button type="button" data-format="underline" title="Υπογράμμιση"><u>U</u></button>
+              <button type="button" data-format="emoji" title="Emoji">😊</button>
+              <button type="button" data-format="image" title="Εικόνα ή GIF μέσα στο κείμενο">🖼️</button>
+            </div>
             <textarea id="actionDescEl" style="min-height:100px;"></textarea>
           </div>
           <div class="form-group">
             <label>Description (EN)</label>
+            <div class="editor-toolbar" data-target="actionDescEn">
+              <button type="button" data-format="h2" title="Heading">Επικεφαλίδα</button>
+              <button type="button" data-format="h3" title="Subheading">Υπο-επικεφαλίδα</button>
+              <button type="button" data-format="bold" title="Bold"><b>B</b></button>
+              <button type="button" data-format="underline" title="Underline"><u>U</u></button>
+              <button type="button" data-format="emoji" title="Emoji">😊</button>
+              <button type="button" data-format="image" title="Image or GIF">🖼️</button>
+            </div>
             <textarea id="actionDescEn" style="min-height:100px;"></textarea>
           </div>
         </div>
@@ -216,7 +232,11 @@
           </div>
           <div class="form-group">
             <label>Εικονίδιο (emoji)</label>
-            <input type="text" id="actionIcon" placeholder="π.χ. 🪑" style="font-size:1.2rem;" />
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input type="text" id="actionIcon" placeholder="π.χ. 🪑" style="font-size:1.2rem;" />
+              <button type="button" id="actionIconPick" class="btn" style="background:#fafafa;border:1px solid #ddd;padding:8px 12px;" title="Διάλεξε emoji">😊</button>
+            </div>
+            <div id="actionIconPalette" class="emoji-palette" style="display:none;"></div>
           </div>
         </div>
         <div class="form-group">
@@ -264,10 +284,20 @@
           </div>
           <div class="form-group">
             <label>Σύντομη περιγραφή (ΕΛ, προαιρετικό)</label>
+            <div class="editor-toolbar" data-target="sponsorDescEl">
+              <button type="button" data-format="bold" title="Έντονα"><b>B</b></button>
+              <button type="button" data-format="underline" title="Υπογράμμιση"><u>U</u></button>
+              <button type="button" data-format="emoji" title="Emoji">😊</button>
+            </div>
             <textarea id="sponsorDescEl" style="min-height:70px;" placeholder="1-2 γραμμές για τον χορηγό"></textarea>
           </div>
           <div class="form-group">
             <label>Short description (EN, προαιρετικό)</label>
+            <div class="editor-toolbar" data-target="sponsorDescEn">
+              <button type="button" data-format="bold" title="Bold"><b>B</b></button>
+              <button type="button" data-format="underline" title="Underline"><u>U</u></button>
+              <button type="button" data-format="emoji" title="Emoji">😊</button>
+            </div>
             <textarea id="sponsorDescEn" style="min-height:70px;"></textarea>
           </div>
           <div class="form-group">

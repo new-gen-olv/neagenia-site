@@ -46,12 +46,40 @@ function setJsonLd(data) {
   document.head.appendChild(s);
 }
 
+// **κείμενο** → έντονα, __κείμενο__ → υπογράμμιση
+function inlineFormat(t) {
+  return t
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/__(.+?)__/g, '<u>$1</u>');
+}
+
+// Γραμμή που είναι σκέτο URL εικόνας/GIF εμφανίζεται ως εικόνα μέσα στο κείμενο
+const IMG_LINE_RE = /^https?:\/\/\S+\.(png|jpe?g|gif|webp)(\?\S*)?$/i;
+
 function descToHtml(text) {
-  return (text || '')
-    .split('\n\n')
-    .filter(p => p.trim())
-    .map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`)
-    .join('');
+  // Γραμμές που ξεκινούν με "## " γίνονται επικεφαλίδες (h2), με "### " υπο-επικεφαλίδες (h3)
+  const blocks = (text || '').split('\n\n').filter(b => b.trim());
+  return blocks.map(block => {
+    let html = '';
+    let para = [];
+    const flush = () => {
+      if (para.length) { html += `<p>${para.map(inlineFormat).join('<br>')}</p>`; para = []; }
+    };
+    for (const line of block.split('\n')) {
+      const t = line.trim();
+      if (IMG_LINE_RE.test(t)) { flush(); html += `<img src="${t}" alt="" class="article-inline-img" loading="lazy" />`; }
+      else if (t.startsWith('### ')) { flush(); html += `<h3>${inlineFormat(t.slice(4))}</h3>`; }
+      else if (t.startsWith('## ')) { flush(); html += `<h2>${inlineFormat(t.slice(3))}</h2>`; }
+      else para.push(line);
+    }
+    flush();
+    return html;
+  }).join('');
+}
+
+// Καθαρό κείμενο χωρίς σύμβολα μορφοποίησης (για meta/previews)
+function stripFormatting(text) {
+  return (text || '').replace(/^https?:\/\/\S+$/gm, '').replace(/^#{2,3}\s+/gm, '').replace(/\*\*|__/g, '').replace(/\s+/g, ' ').trim();
 }
 
 async function load() {
@@ -76,9 +104,10 @@ async function load() {
 
     // Δυναμικά meta για SEO και social share ανά δράση
     const pageUrl = `https://neageniaolv.org/action.html?id=${encodeURIComponent(id)}`;
-    setMeta('description', (desc || '').slice(0, 160));
+    const plainDesc = stripFormatting(desc).slice(0, 160);
+    setMeta('description', plainDesc);
     setOg('og:title', title);
-    setOg('og:description', (desc || '').slice(0, 160));
+    setOg('og:description', plainDesc);
     setOg('og:url', pageUrl);
     if (mainImg) setOg('og:image', mainImg);
     setCanonical(pageUrl);
@@ -88,7 +117,7 @@ async function load() {
       '@context': 'https://schema.org',
       '@type': 'Article',
       headline: title,
-      description: (desc || '').slice(0, 160),
+      description: plainDesc,
       url: pageUrl,
       image: images.length ? images : 'https://neageniaolv.org/Assets/Images/background.jpg',
       datePublished: published && published.toDate ? published.toDate().toISOString() : undefined,

@@ -266,7 +266,8 @@ function matchesFilter(d, f) {
 // ===== ACTIONS — render =====
 function renderActionCard(d) {
   const title = currentLang === 'el' ? d.titleEl : (d.titleEn || d.titleEl);
-  const fullDesc = currentLang === 'el' ? d.descEl : (d.descEn || d.descEl);
+  const rawDesc = currentLang === 'el' ? d.descEl : (d.descEn || d.descEl);
+  const fullDesc = (rawDesc || '').replace(/^https?:\/\/\S+$/gm, '').replace(/^#{2,3}\s+/gm, '').replace(/\*\*|__/g, '').replace(/\s+/g, ' ').trim();
   const cat   = catLabel(d.category || '');
   const styleAttr = d.imageStyle ? ` style="${d.imageStyle}"` : '';
 
