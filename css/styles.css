@@ -869,6 +869,12 @@ section[id] { scroll-margin-top: 70px; }
   font-weight: 700; color: var(--blue); transition: var(--transition);
 }
 .sponsor-card-link:hover .sponsor-visit { color: var(--primary-dark); }
+.sponsor-card.clickable { cursor: pointer; }
+.sponsor-card.clickable:hover .sponsor-visit { color: var(--primary-dark); }
+.sponsor-contacts { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+.sponsor-contact { font-size: 0.82rem; color: #555; }
+a.sponsor-tel { color: var(--blue); font-weight: 600; transition: var(--transition); }
+a.sponsor-tel:hover { color: var(--primary-dark); }
 
 .sponsors-empty { color: var(--gray); font-size: 0.95rem; padding: 12px 0 32px; text-align: center; }
 

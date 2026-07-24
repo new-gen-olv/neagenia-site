@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css?v=20260725c" />
+  <link rel="stylesheet" href="css/styles.css?v=20260725d" />
   <style>
     /* Επισκεψιμότητα */
     .traffic-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
@@ -302,11 +302,19 @@
           </div>
           <div class="form-group">
             <label>Website (προαιρετικό)</label>
-            <input type="url" id="sponsorWebsite" placeholder="https://..." />
+            <input type="url" id="sponsorWebsite" value="https://" placeholder="https://www.example.gr" />
           </div>
           <div class="form-group">
             <label>Σειρά (order)</label>
             <input type="number" id="sponsorOrder" value="10" min="1" max="99" />
+          </div>
+          <div class="form-group">
+            <label>Τηλέφωνο (προαιρετικό)</label>
+            <input type="tel" id="sponsorPhone" placeholder="π.χ. 210 1234567" />
+          </div>
+          <div class="form-group">
+            <label>Διεύθυνση (προαιρετικό)</label>
+            <input type="text" id="sponsorAddress" placeholder="π.χ. Πλατεία Ολυμπιακού Χωριού 5, Αχαρνές" />
           </div>
         </div>
         <div class="form-group">
@@ -402,6 +410,6 @@
   </main>
 </div>
 
-<script type="module" src="js/admin.js?v=20260725"></script>
+<script type="module" src="js/admin.js?v=20260725d"></script>
 </body>
 </html>

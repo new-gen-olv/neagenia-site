@@ -905,8 +905,10 @@ async function startEditSponsor(id) {
   document.getElementById('sponsorTier').value = s.tier || 'sponsor';
   document.getElementById('sponsorDescEl').value = s.descEl || '';
   document.getElementById('sponsorDescEn').value = s.descEn || '';
-  document.getElementById('sponsorWebsite').value = s.website || '';
+  document.getElementById('sponsorWebsite').value = s.website || 'https://';
   document.getElementById('sponsorOrder').value = s.order || 10;
+  document.getElementById('sponsorPhone').value = s.phone || '';
+  document.getElementById('sponsorAddress').value = s.address || '';
   editingSponsorLogo = s.logoUrl || '';
   if (editingSponsorLogo) {
     const preview = document.getElementById('sponsorImagePreview');
@@ -922,7 +924,8 @@ async function startEditSponsor(id) {
 document.getElementById('btnCancelSponsor')?.addEventListener('click', () => {
   editingSponsorId = null;
   editingSponsorLogo = '';
-  ['sponsorName', 'sponsorDescEl', 'sponsorDescEn', 'sponsorWebsite'].forEach(id => document.getElementById(id).value = '');
+  ['sponsorName', 'sponsorDescEl', 'sponsorDescEn', 'sponsorPhone', 'sponsorAddress'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('sponsorWebsite').value = 'https://';
   document.getElementById('sponsorTier').value = 'sponsor';
   document.getElementById('sponsorOrder').value = 10;
   document.getElementById('sponsorFormTitle').textContent = 'Νέος Χορηγός';
@@ -938,10 +941,15 @@ document.getElementById('btnSubmitSponsor')?.addEventListener('click', async () 
   const tier    = document.getElementById('sponsorTier').value;
   const descEl  = document.getElementById('sponsorDescEl').value.trim();
   const descEn  = document.getElementById('sponsorDescEn').value.trim();
-  const website = document.getElementById('sponsorWebsite').value.trim();
+  let website   = document.getElementById('sponsorWebsite').value.trim();
   const order   = parseInt(document.getElementById('sponsorOrder').value) || 10;
+  const phone   = document.getElementById('sponsorPhone').value.trim();
+  const address = document.getElementById('sponsorAddress').value.trim();
   const errEl   = document.getElementById('sponsorError');
   errEl.style.display = 'none';
+
+  // Το προσυμπληρωμένο σκέτο "https://" μετράει ως κενό website
+  if (/^https?:\/\/$/.test(website)) website = '';
 
   if (!name) { errEl.textContent = 'Το όνομα είναι υποχρεωτικό.'; errEl.style.display = 'block'; return; }
   if (website && !/^https?:\/\//.test(website)) {
@@ -965,7 +973,7 @@ document.getElementById('btnSubmitSponsor')?.addEventListener('click', async () 
       return;
     }
 
-    const payload = { name, tier, descEl, descEn, website, order, logoUrl };
+    const payload = { name, tier, descEl, descEn, website, order, logoUrl, phone, address };
     if (editingSponsorId) {
       await updateDoc(doc(db, 'sponsors', editingSponsorId), payload);
     } else {

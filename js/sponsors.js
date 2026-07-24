@@ -94,23 +94,33 @@ function sponsorCard(d) {
   const logo = d.logoUrl
     ? `<div class="sponsor-card-logo"><img src="${d.logoUrl}" alt="${d.name}" loading="lazy" /></div>`
     : `<div class="sponsor-card-logo sponsor-logo-fallback"><span>${(d.name || '?').charAt(0).toUpperCase()}</span></div>`;
-  // span, ΟΧΙ <a>: η κάρτα τυλίγεται ήδη σε <a> και τα nested links σπάνε το grid
   const link = d.website
     ? `<span class="sponsor-visit">${translations[currentLang].sp_visit}</span>`
     : '';
-  const card = `<div class="sponsor-card">
+  // Διεύθυνση (κείμενο) + τηλέφωνο (κλικαμπλ tel:)
+  const contact = [
+    d.address ? `<span class="sponsor-contact">📍 ${d.address}</span>` : '',
+    d.phone ? `<a href="tel:${d.phone.replace(/[^+\d]/g, '')}" class="sponsor-contact sponsor-tel">📞 ${d.phone}</a>` : ''
+  ].filter(Boolean).join('');
+  // Η κάρτα γίνεται clickable μέσω data-url + delegated handler (ΟΧΙ wrapper <a>,
+  // ώστε το tel: link να δουλεύει χωρίς nested anchors που σπάνε το grid)
+  return `<div class="sponsor-card${d.website ? ' clickable' : ''}"${d.website ? ` data-url="${d.website}"` : ''}>
     ${logo}
     <div class="sponsor-card-body">
       <h3>${d.name}</h3>
       ${desc ? `<p>${desc}</p>` : ''}
+      ${contact ? `<div class="sponsor-contacts">${contact}</div>` : ''}
       ${link}
     </div>
   </div>`;
-  // Όλη η κάρτα clickable αν υπάρχει website
-  return d.website
-    ? `<a href="${d.website}" target="_blank" rel="noopener" class="sponsor-card-link">${card}</a>`
-    : card;
 }
+
+// Κλικ σε κάρτα με website → άνοιγμα site (εκτός αν πατήθηκε το τηλέφωνο)
+document.getElementById('sponsorsContent').addEventListener('click', e => {
+  if (e.target.closest('a')) return;
+  const card = e.target.closest('.sponsor-card[data-url]');
+  if (card) window.open(card.dataset.url, '_blank', 'noopener');
+});
 
 function renderSponsors() {
   const el = document.getElementById('sponsorsContent');
