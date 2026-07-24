@@ -11,7 +11,7 @@
 // =========================================================
 import { db } from './firebase-config.js';
 import {
-  doc, setDoc, increment, serverTimestamp
+  doc, setDoc, updateDoc, increment, serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 // ── storage helpers (private mode μπορεί να πετάξει exception) ──
@@ -72,10 +72,32 @@ function record() {
     .catch(() => {}); // σιωπηλή αποτυχία — το tracking δεν σπάει ποτέ τη σελίδα
 }
 
+// ── Μετρητής προβολών ανά άρθρο/ανακοίνωση (viewCount πάνω στο ίδιο το doc) ──
+// Τρέχει μόνο στο article.html (?id=...&col=articles|announcements).
+// Τα rules επιτρέπουν δημόσιο update ΜΟΝΟ του viewCount, μόνο +1, μόνο σε published.
+function recordArticleView() {
+  if (pageKey() !== 'article') return;
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  const col = params.get('col') || 'articles';
+  if (!id || !/^[A-Za-z0-9_-]{1,60}$/.test(id)) return;
+  if (col !== 'articles' && col !== 'announcements') return;
+
+  // Guard: 1 προβολή ανά άρθρο ανά session
+  const sessionKey = 'ng_av_' + col + '_' + id;
+  if (ssGet(sessionKey)) return;
+
+  updateDoc(doc(db, col, id), { viewCount: increment(1) })
+    .then(() => { ssSet(sessionKey, '1'); })
+    .catch(() => {}); // ανύπαρκτο/μη δημοσιευμένο άρθρο: απλώς δεν μετράει
+}
+
 // Τρέχει αφού φορτώσει η σελίδα, σε idle time, για μηδενική επίδραση στο loading
 function schedule() {
   if (window.requestIdleCallback) requestIdleCallback(record, { timeout: 4000 });
   else setTimeout(record, 1500);
+  if (window.requestIdleCallback) requestIdleCallback(recordArticleView, { timeout: 4000 });
+  else setTimeout(recordArticleView, 1600);
 }
 if (document.readyState === 'complete') schedule();
 else window.addEventListener('load', schedule);

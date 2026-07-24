@@ -209,7 +209,7 @@ async function loadArticles() {
   const snap = await getDocs(q);
   if (snap.empty) { el.innerHTML = '<p style="color:#888;">Δεν υπάρχουν άρθρα.</p>'; return; }
   el.innerHTML = `<table class="content-table">
-    <thead><tr><th>Τίτλος</th><th>Συγγραφέας</th><th>Ημ/νία</th><th>Κατάσταση</th><th>Ενέργειες</th></tr></thead>
+    <thead><tr><th>Τίτλος</th><th>Συγγραφέας</th><th>Ημ/νία</th><th>Κατάσταση</th><th>👁 Προβολές</th><th>Ενέργειες</th></tr></thead>
     <tbody>${snap.docs.map(d => {
       const data = d.data();
       const canEdit = currentRole === 'admin' || data.authorUid === currentUser.uid;
@@ -218,6 +218,7 @@ async function loadArticles() {
         <td style="font-size:0.82rem;color:#666;">${data.authorName || '—'}</td>
         <td style="font-size:0.8rem;color:#888;">${fmt(data.createdAt)}</td>
         <td>${statusBadge(data.status)}</td>
+        <td style="font-size:0.82rem;color:#666;">${data.viewCount || 0}</td>
         <td style="display:flex;gap:6px;flex-wrap:wrap;">
           ${canEdit ? `<button class="btn btn-sm btn-blue" data-edit-art="${d.id}">Επεξ.</button>` : ''}
           ${canEdit ? `<button class="btn btn-sm btn-danger" data-del-art="${d.id}">Διαγρ.</button>` : ''}
@@ -311,7 +312,7 @@ async function loadAnnouncements() {
   const snap = await getDocs(q);
   if (snap.empty) { el.innerHTML = '<p style="color:#888;">Δεν υπάρχουν ανακοινώσεις.</p>'; return; }
   el.innerHTML = `<table class="content-table">
-    <thead><tr><th>Τίτλος</th><th>Συγγραφέας</th><th>Ημ/νία</th><th>Κατάσταση</th><th>Ενέργειες</th></tr></thead>
+    <thead><tr><th>Τίτλος</th><th>Συγγραφέας</th><th>Ημ/νία</th><th>Κατάσταση</th><th>👁 Προβολές</th><th>Ενέργειες</th></tr></thead>
     <tbody>${snap.docs.map(d => {
       const data = d.data();
       const canEdit = currentRole === 'admin' || data.authorUid === currentUser.uid;
@@ -320,6 +321,7 @@ async function loadAnnouncements() {
         <td style="font-size:0.82rem;color:#666;">${data.authorName || '—'}</td>
         <td style="font-size:0.8rem;color:#888;">${fmt(data.createdAt)}</td>
         <td>${statusBadge(data.status)}</td>
+        <td style="font-size:0.82rem;color:#666;">${data.viewCount || 0}</td>
         <td style="display:flex;gap:6px;flex-wrap:wrap;">
           ${canEdit ? `<button class="btn btn-sm btn-blue" data-edit-ann="${d.id}">Επεξ.</button>` : ''}
           ${canEdit ? `<button class="btn btn-sm btn-danger" data-del-ann="${d.id}">Διαγρ.</button>` : ''}
@@ -1140,6 +1142,7 @@ function trafficDayKeys(n) {
 async function loadTraffic() {
   const chartEl = document.getElementById('trafChart');
   if (!chartEl) return;
+  loadTopArticles();
   const keys = trafficDayKeys(30);
   try {
     const snap = await getDocs(query(
@@ -1245,4 +1248,32 @@ function renderTraffic(keys, byDay) {
     return `<tr><td>${escTraffic(label)}</td><td>${r.views}</td>` +
            `<td><div class="traf-bar-track"><div class="traf-bar-fill" style="width:${pct}%;"></div></div></td></tr>`;
   }).join('');
+}
+
+// Top άρθρα & ανακοινώσεις βάσει viewCount (γράφεται από το js/traffic.js στο article.html)
+async function loadTopArticles() {
+  const tbody = document.querySelector('#trafArticlesTable tbody');
+  if (!tbody) return;
+  try {
+    const [artSnap, annSnap] = await Promise.all([
+      getDocs(query(collection(db, 'articles'), orderBy('viewCount', 'desc'), limit(5))),
+      getDocs(query(collection(db, 'announcements'), orderBy('viewCount', 'desc'), limit(5)))
+    ]);
+    const rows = [];
+    artSnap.forEach(d => rows.push({ title: d.data().title, type: 'Άρθρο', views: d.data().viewCount || 0 }));
+    annSnap.forEach(d => rows.push({ title: d.data().title, type: 'Ανακοίνωση', views: d.data().viewCount || 0 }));
+    const top = rows.filter(r => r.views > 0).sort((a, b) => b.views - a.views).slice(0, 8);
+    if (!top.length) {
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#888;">Καμία προβολή άρθρου ακόμα.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = top.map(r =>
+      `<tr><td><strong>${escTraffic(r.title)}</strong></td>` +
+      `<td style="font-size:0.82rem;color:#666;">${r.type}</td>` +
+      `<td>${r.views}</td></tr>`
+    ).join('');
+  } catch (e) {
+    console.warn('[topArticles]', e);
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#888;">Δεν ήταν δυνατή η φόρτωση.</td></tr>';
+  }
 }
