@@ -125,7 +125,7 @@ function renderSponsors() {
     const items = cachedSponsors.filter(s => (s.tier || 'sponsor') === tier.key);
     if (!items.length) return '';
     return `<section class="sponsor-tier-block">
-      <h2 class="sponsor-tier-title${tier.key === 'gold' ? ' gold' : ''}">${tier[currentLang]}</h2>
+      <h2 class="sponsor-tier-title ${tier.key}">${tier[currentLang]}</h2>
       <div class="sponsors-grid">${items.map(sponsorCard).join('')}</div>
     </section>`;
   }).join('');

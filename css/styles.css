@@ -824,9 +824,16 @@ section[id] { scroll-margin-top: 70px; }
 .sponsor-tier-title::after {
   content: ''; flex: 1; height: 2px; background: var(--gray-light); border-radius: 2px;
 }
-.sponsor-tier-title.gold { color: var(--primary-dark); }
+/* Χρυσοί = έντονο χρυσό, Χορηγοί = αργυρό, Υποστηρικτές = χάλκινο */
+.sponsor-tier-title.gold { color: #c98a00; }
 .sponsor-tier-title.gold::before,
-.sponsor-tier-title.gold::after { background: var(--primary); opacity: 0.4; }
+.sponsor-tier-title.gold::after { background: #e0a71f; }
+.sponsor-tier-title.sponsor { color: #82878d; }
+.sponsor-tier-title.sponsor::before,
+.sponsor-tier-title.sponsor::after { background: #b9bec4; }
+.sponsor-tier-title.supporter { color: #a5642a; }
+.sponsor-tier-title.supporter::before,
+.sponsor-tier-title.supporter::after { background: #c98f57; }
 
 .sponsor-tier-block { margin-bottom: 48px; padding: 0; }
 
