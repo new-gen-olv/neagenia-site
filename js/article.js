@@ -13,12 +13,31 @@ function formatDate(ts) {
   return d.toLocaleDateString('el-GR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
+// **κείμενο** → έντονα, __κείμενο__ → υπογράμμιση
+function inlineFormat(t) {
+  return t
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/__(.+?)__/g, '<u>$1</u>');
+}
+
 function bodyToHtml(text) {
-  return (text || '')
-    .split('\n\n')
-    .filter(p => p.trim())
-    .map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`)
-    .join('');
+  // Γραμμές που ξεκινούν με "## " γίνονται επικεφαλίδες (h2), με "### " υπο-επικεφαλίδες (h3)
+  const blocks = (text || '').split('\n\n').filter(b => b.trim());
+  return blocks.map(block => {
+    let html = '';
+    let para = [];
+    const flush = () => {
+      if (para.length) { html += `<p>${para.map(inlineFormat).join('<br>')}</p>`; para = []; }
+    };
+    for (const line of block.split('\n')) {
+      const t = line.trim();
+      if (t.startsWith('### ')) { flush(); html += `<h3>${inlineFormat(t.slice(4))}</h3>`; }
+      else if (t.startsWith('## ')) { flush(); html += `<h2>${inlineFormat(t.slice(3))}</h2>`; }
+      else para.push(line);
+    }
+    flush();
+    return html;
+  }).join('');
 }
 
 async function load() {
@@ -37,7 +56,7 @@ async function load() {
     }
     const d = snap.data();
     document.title = `${d.title} | Νέα Γενιά «Πράξις» Ολυμπιακού Χωριού`;
-    const plain = (d.body || '').replace(/\s+/g, ' ').trim().slice(0, 160);
+    const plain = (d.body || '').replace(/^#{2,3}\s+/gm, '').replace(/\*\*|__/g, '').replace(/\s+/g, ' ').trim().slice(0, 160);
     const setMeta = (name, content) => {
       let m = document.querySelector(`meta[name="${name}"]`);
       if (!m) { m = document.createElement('meta'); m.setAttribute('name', name); document.head.appendChild(m); }

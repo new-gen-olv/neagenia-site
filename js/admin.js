@@ -99,6 +99,44 @@ async function markTabRead(panel) {
   ));
 }
 
+// ===== EDITOR TOOLBAR (μορφοποίηση κειμένου άρθρων/ανακοινώσεων) =====
+// Επικεφαλίδα: "## ", υπο-επικεφαλίδα: "### ", έντονα: **κείμενο**, υπογράμμιση: __κείμενο__
+document.querySelectorAll('.editor-toolbar').forEach(toolbar => {
+  const ta = document.getElementById(toolbar.dataset.target);
+  if (!ta) return;
+  toolbar.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const fmt = btn.dataset.format;
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      const val = ta.value;
+      const sel = val.slice(start, end);
+
+      if (fmt === 'bold' || fmt === 'underline') {
+        const mark = fmt === 'bold' ? '**' : '__';
+        const inner = sel || (fmt === 'bold' ? 'έντονο κείμενο' : 'υπογραμμισμένο κείμενο');
+        ta.value = val.slice(0, start) + mark + inner + mark + val.slice(end);
+        ta.focus();
+        ta.setSelectionRange(start + mark.length, start + mark.length + inner.length);
+      } else {
+        // Επικεφαλίδα: το πρόθεμα μπαίνει στην αρχή της τρέχουσας γραμμής
+        const prefix = fmt === 'h3' ? '### ' : '## ';
+        const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+        const lineIsEmpty = !val.slice(lineStart, start).trim() && (end === start);
+        if (lineIsEmpty && !sel) {
+          const inner = fmt === 'h3' ? 'Υπο-επικεφαλίδα' : 'Επικεφαλίδα';
+          ta.value = val.slice(0, start) + prefix + inner + val.slice(end);
+          ta.focus();
+          ta.setSelectionRange(start + prefix.length, start + prefix.length + inner.length);
+        } else {
+          ta.value = val.slice(0, lineStart) + prefix + val.slice(lineStart);
+          ta.focus();
+          ta.setSelectionRange(start + prefix.length, end + prefix.length);
+        }
+      }
+    });
+  });
+});
+
 // ===== HELPERS =====
 function fmt(ts) {
   if (!ts) return '—';

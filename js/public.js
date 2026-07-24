@@ -415,7 +415,8 @@ function renderNewsCard(d, col) {
   const imgHtml = d.coverImageUrl
     ? `<img src="${d.coverImageUrl}" alt="${d.title}" loading="lazy" />`
     : '';
-  const preview = d.body ? d.body.slice(0, 140) + (d.body.length > 140 ? '…' : '') : '';
+  const previewSrc = d.body ? d.body.replace(/^#{2,3}\s+/gm, '').replace(/\*\*|__/g, '').replace(/\s+/g, ' ').trim() : '';
+  const preview = previewSrc ? previewSrc.slice(0, 140) + (previewSrc.length > 140 ? '…' : '') : '';
   return `
     <a href="${url}" class="news-card-link">
       <article class="news-card">
