@@ -94,8 +94,9 @@ function sponsorCard(d) {
   const logo = d.logoUrl
     ? `<div class="sponsor-card-logo"><img src="${d.logoUrl}" alt="${d.name}" loading="lazy" /></div>`
     : `<div class="sponsor-card-logo sponsor-logo-fallback"><span>${(d.name || '?').charAt(0).toUpperCase()}</span></div>`;
+  // span, ΟΧΙ <a>: η κάρτα τυλίγεται ήδη σε <a> και τα nested links σπάνε το grid
   const link = d.website
-    ? `<a href="${d.website}" target="_blank" rel="noopener" class="sponsor-visit">${translations[currentLang].sp_visit}</a>`
+    ? `<span class="sponsor-visit">${translations[currentLang].sp_visit}</span>`
     : '';
   const card = `<div class="sponsor-card">
     ${logo}
