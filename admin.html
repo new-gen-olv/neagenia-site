@@ -311,41 +311,34 @@
           <div class="form-group">
             <label>Σταθερό τηλέφωνο (προαιρετικό)</label>
             <div style="display:flex;gap:6px;">
-              <select id="sponsorPhoneCode" class="phone-code-select">
-                <option value="+30" selected>🇬🇷 +30</option>
-                <option value="+357">🇨🇾 +357</option>
-                <option value="+44">🇬🇧 +44</option>
-                <option value="+49">🇩🇪 +49</option>
-                <option value="+33">🇫🇷 +33</option>
-                <option value="+39">🇮🇹 +39</option>
-                <option value="+31">🇳🇱 +31</option>
-                <option value="+32">🇧🇪 +32</option>
-                <option value="+41">🇨🇭 +41</option>
-                <option value="+1">🇺🇸 +1</option>
-                <option value="+61">🇦🇺 +61</option>
-              </select>
+              <input type="text" list="phoneCodesList" id="sponsorPhoneCode" value="+30" class="phone-code-select" title="Διάλεξε ή γράψε πρόθεμα χώρας" />
               <input type="tel" id="sponsorPhone" placeholder="π.χ. 210 1234567" style="flex:1;" />
             </div>
           </div>
           <div class="form-group">
             <label>Κινητό τηλέφωνο (προαιρετικό)</label>
             <div style="display:flex;gap:6px;">
-              <select id="sponsorMobileCode" class="phone-code-select">
-                <option value="+30" selected>🇬🇷 +30</option>
-                <option value="+357">🇨🇾 +357</option>
-                <option value="+44">🇬🇧 +44</option>
-                <option value="+49">🇩🇪 +49</option>
-                <option value="+33">🇫🇷 +33</option>
-                <option value="+39">🇮🇹 +39</option>
-                <option value="+31">🇳🇱 +31</option>
-                <option value="+32">🇧🇪 +32</option>
-                <option value="+41">🇨🇭 +41</option>
-                <option value="+1">🇺🇸 +1</option>
-                <option value="+61">🇦🇺 +61</option>
-              </select>
+              <input type="text" list="phoneCodesList" id="sponsorMobileCode" value="+30" class="phone-code-select" title="Διάλεξε ή γράψε πρόθεμα χώρας" />
               <input type="tel" id="sponsorMobile" placeholder="π.χ. 69X XXXXXXX" style="flex:1;" />
             </div>
           </div>
+          <datalist id="phoneCodesList">
+            <option value="+30">Ελλάδα</option>
+            <option value="+357">Κύπρος</option>
+            <option value="+44">Ηνωμένο Βασίλειο</option>
+            <option value="+49">Γερμανία</option>
+            <option value="+33">Γαλλία</option>
+            <option value="+39">Ιταλία</option>
+            <option value="+31">Ολλανδία</option>
+            <option value="+32">Βέλγιο</option>
+            <option value="+41">Ελβετία</option>
+            <option value="+34">Ισπανία</option>
+            <option value="+351">Πορτογαλία</option>
+            <option value="+43">Αυστρία</option>
+            <option value="+46">Σουηδία</option>
+            <option value="+1">ΗΠΑ / Καναδάς</option>
+            <option value="+61">Αυστραλία</option>
+          </datalist>
           <div class="form-group">
             <label>Οδός (προαιρετικό)</label>
             <input type="text" id="sponsorStreet" placeholder="π.χ. Πλατεία Ολυμπιακού Χωριού" />
@@ -464,6 +457,6 @@
   </main>
 </div>
 
-<script type="module" src="js/admin.js?v=20260725f"></script>
+<script type="module" src="js/admin.js?v=20260725g"></script>
 </body>
 </html>

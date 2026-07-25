@@ -953,10 +953,15 @@ document.getElementById('btnSubmitSponsor')?.addEventListener('click', async () 
   const descEn  = document.getElementById('sponsorDescEn').value.trim();
   let website   = document.getElementById('sponsorWebsite').value.trim();
   const order   = parseInt(document.getElementById('sponsorOrder').value) || 10;
+  // Πρόθεμα χώρας: δεκτό και πληκτρολογημένο — κρατάμε ψηφία και βάζουμε + μπροστά αν λείπει
+  const normCode = v => {
+    const digits = v.trim().replace(/[^\d]/g, '');
+    return digits ? '+' + digits : '';
+  };
   const phone      = document.getElementById('sponsorPhone').value.trim();
-  const phoneCode  = document.getElementById('sponsorPhoneCode').value;
+  const phoneCode  = normCode(document.getElementById('sponsorPhoneCode').value);
   const mobile     = document.getElementById('sponsorMobile').value.trim();
-  const mobileCode = document.getElementById('sponsorMobileCode').value;
+  const mobileCode = normCode(document.getElementById('sponsorMobileCode').value);
   const street     = document.getElementById('sponsorStreet').value.trim();
   const streetNo   = document.getElementById('sponsorStreetNo').value.trim();
   const zip        = document.getElementById('sponsorZip').value.trim();
