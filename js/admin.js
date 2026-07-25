@@ -941,7 +941,7 @@ async function startEditSponsor(id) {
   document.getElementById('sponsorDescEl').value = s.descEl || '';
   document.getElementById('sponsorDescEn').value = s.descEn || '';
   document.getElementById('sponsorWebsite').value = s.website || 'https://';
-  document.getElementById('sponsorOrder').value = s.order || 10;
+  document.getElementById('sponsorOrder').value = s.order || 1;
   document.getElementById('sponsorPhone').value = s.phone || '';
   setPhoneCode('sponsorPhoneCode', 'sponsorPhoneCodeCustom', s.phoneCode || '+30');
   document.getElementById('sponsorMobile').value = s.mobile || '';
@@ -972,7 +972,7 @@ document.getElementById('btnCancelSponsor')?.addEventListener('click', () => {
   setPhoneCode('sponsorMobileCode', 'sponsorMobileCodeCustom', '+30');
   document.getElementById('sponsorWebsite').value = 'https://';
   document.getElementById('sponsorTier').value = 'sponsor';
-  document.getElementById('sponsorOrder').value = 10;
+  document.getElementById('sponsorOrder').value = 1;
   document.getElementById('sponsorFormTitle').textContent = 'Νέος Χορηγός';
   document.getElementById('btnCancelSponsor').style.display = 'none';
   document.getElementById('sponsorError').style.display = 'none';
@@ -987,7 +987,7 @@ document.getElementById('btnSubmitSponsor')?.addEventListener('click', async () 
   const descEl  = document.getElementById('sponsorDescEl').value.trim();
   const descEn  = document.getElementById('sponsorDescEn').value.trim();
   let website   = document.getElementById('sponsorWebsite').value.trim();
-  const order   = parseInt(document.getElementById('sponsorOrder').value) || 10;
+  const order   = parseInt(document.getElementById('sponsorOrder').value) || 1;
   const phone      = document.getElementById('sponsorPhone').value.trim();
   const phoneCode  = getPhoneCode('sponsorPhoneCode', 'sponsorPhoneCodeCustom');
   const mobile     = document.getElementById('sponsorMobile').value.trim();
