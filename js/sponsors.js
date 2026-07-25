@@ -82,6 +82,33 @@ document.getElementById('langToggle').addEventListener('click', () => {
 });
 
 // ===== RENDER =====
+// Μεταγραμματισμός ελληνικών σε λατινικά για τη διεύθυνση στα αγγλικά
+const GR_LAT = {
+  'α':'a','ά':'a','β':'v','γ':'g','δ':'d','ε':'e','έ':'e','ζ':'z','η':'i','ή':'i','θ':'th',
+  'ι':'i','ί':'i','ϊ':'i','ΐ':'i','κ':'k','λ':'l','μ':'m','ν':'n','ξ':'x','ο':'o','ό':'o',
+  'π':'p','ρ':'r','σ':'s','ς':'s','τ':'t','υ':'y','ύ':'y','ϋ':'y','ΰ':'y','φ':'f','χ':'ch',
+  'ψ':'ps','ω':'o','ώ':'o',
+  'Α':'A','Ά':'A','Β':'V','Γ':'G','Δ':'D','Ε':'E','Έ':'E','Ζ':'Z','Η':'I','Ή':'I','Θ':'TH',
+  'Ι':'I','Ί':'I','Ϊ':'I','Κ':'K','Λ':'L','Μ':'M','Ν':'N','Ξ':'X','Ο':'O','Ό':'O',
+  'Π':'P','Ρ':'R','Σ':'S','Τ':'T','Υ':'Y','Ύ':'Y','Ϋ':'Y','Φ':'F','Χ':'CH','Ψ':'PS','Ω':'O','Ώ':'O'
+};
+function greekToLatin(t) {
+  return (t || '').split('').map(c => GR_LAT[c] !== undefined ? GR_LAT[c] : c).join('');
+}
+// Χώρες: μετάφραση και προς τις δύο κατευθύνσεις
+const COUNTRY_MAP_EN = { 'ελλάδα':'Greece', 'ελλαδα':'Greece', 'κύπρος':'Cyprus', 'κυπρος':'Cyprus' };
+const COUNTRY_MAP_EL = { 'greece':'Ελλάδα', 'cyprus':'Κύπρος' };
+function localizeCountry(c) {
+  if (!c) return '';
+  const key = c.trim().toLowerCase();
+  if (currentLang === 'en') return COUNTRY_MAP_EN[key] || greekToLatin(c);
+  return COUNTRY_MAP_EL[key] || c;
+}
+// Πεδίο διεύθυνσης: στα EN μεταγράφεται σε λατινικούς χαρακτήρες
+function localizeAddr(t) {
+  return currentLang === 'en' ? greekToLatin(t || '') : (t || '');
+}
+
 // **κείμενο** → έντονα, __κείμενο__ → υπογράμμιση
 function inlineFormat(t) {
   return (t || '')
@@ -100,12 +127,12 @@ function sponsorCard(d) {
   // Διεύθυνση από τα επιμέρους πεδία: «Οδός Αριθμός, ΤΚ Πόλη, Νομός, Χώρα»
   // (κρατάμε και το παλιό ενιαίο d.address για συμβατότητα)
   const addressParts = [
-    [d.street, d.streetNo].filter(Boolean).join(' '),
-    [d.zip, d.city].filter(Boolean).join(' '),
-    d.prefecture,
-    d.country
+    [localizeAddr(d.street), d.streetNo].filter(Boolean).join(' '),
+    [d.zip, localizeAddr(d.city)].filter(Boolean).join(' '),
+    localizeAddr(d.prefecture),
+    localizeCountry(d.country)
   ].filter(Boolean).join(', ');
-  const address = addressParts || d.address || '';
+  const address = addressParts || localizeAddr(d.address) || '';
   // Τηλέφωνα με πρόθεμα χώρας, κλικαμπλ tel:
   const telLink = (code, num, icon) => {
     const shown = `${code ? code + ' ' : ''}${num}`;
