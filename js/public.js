@@ -48,6 +48,8 @@ const translations = {
     problem_p4: 'Είναι ένας καθαρός εθελοντικός αγώνας για τον τόπο μας, μακριά από κόμματα, δογματισμούς και άγονες αντιπαραθέσεις, με μόνο σκοπό την εύρεση λύσεων. Όλοι την ίδια ευθύνη φέρουμε, και όλοι ενωμένοι μπορούμε να δώσουμε μια μάχη για το μέλλον μας.',
     actions_title: 'Πράξεις, <span>όχι λόγια</span>',
     news_title: 'Ανακοινώσεις & <span>Άρθρα</span>',
+    articles_sec_title: 'Τα <span>Άρθρα</span> μας',
+    announcements_sec_title: 'Οι <span>Ανακοινώσεις</span> μας',
     gallery_title: 'Gallery',
     about_title: 'Ποιοι <span>είμαστε</span>',
     about_p1: 'Είμαστε η <strong>Νέα Γενιά «Πράξις» Ολυμπιακού Χωριού</strong>, μια Αστική Μη Κερδοσκοπική Εταιρεία και, πάνω απ\' όλα, μια ομάδα νέων ανθρώπων που πιστεύουν ότι ο τόπος αλλάζει όταν οι πολίτες του ανασκουμπώνονται.',
@@ -128,6 +130,8 @@ const translations = {
     problem_p4: 'This is a pure volunteer effort for our place, free of parties, dogmatism and fruitless confrontation, with the sole aim of finding solutions. We all share the same responsibility, and united we can fight for our future.',
     actions_title: 'Actions, <span>not words</span>',
     news_title: 'Announcements & <span>Articles</span>',
+    articles_sec_title: 'Our <span>Articles</span>',
+    announcements_sec_title: 'Our <span>Announcements</span>',
     gallery_title: 'Gallery',
     about_title: 'Who <span>we are</span>',
     about_p1: 'We are <strong>Nea Genia "Praxis" of the Olympic Village</strong>, a non-profit civil organization and, above all, a group of young people who believe that a place changes when its citizens roll up their sleeves.',
@@ -246,7 +250,8 @@ let cachedAnnouncements = null;
 
 // ===== ΗΜΕΡΟΛΟΓΙΑΚΟ ΦΙΛΤΡΟ (μήνας/έτος) =====
 const actionsFilter = { month: '', year: '' };
-const newsFilter = { month: '', year: '' };
+const articlesFilter = { month: '', year: '' };
+const annFilter = { month: '', year: '' };
 
 function itemDate(d) {
   const ts = d.publishedAt || d.createdAt;
@@ -383,27 +388,9 @@ if (langToggleMobile) {
   });
 }
 
-// ===== ARTICLES / ANNOUNCEMENTS TABS =====
-const tabBtns = document.querySelectorAll('.tab-btn');
+// ===== ARTICLES / ANNOUNCEMENTS — δύο ξεχωριστές ενότητες, η καθεμιά με δικό της carousel =====
 const articlesGrid = document.getElementById('articlesGrid');
 const announcementsGrid = document.getElementById('announcementsGrid');
-const articlesWrap = document.getElementById('articlesWrap');
-const announcementsWrap = document.getElementById('announcementsWrap');
-
-tabBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    tabBtns.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    if (btn.dataset.tab === 'articles') {
-      articlesWrap.classList.remove('hidden');
-      announcementsWrap.classList.add('hidden');
-    } else {
-      articlesWrap.classList.add('hidden');
-      announcementsWrap.classList.remove('hidden');
-    }
-    refreshCarousels();
-  });
-});
 
 function formatDate(ts) {
   if (!ts) return '';
@@ -435,11 +422,12 @@ function renderNewsCard(d, col) {
 function renderNews(kind) {
   const grid = kind === 'articles' ? articlesGrid : announcementsGrid;
   const cached = kind === 'articles' ? cachedArticles : cachedAnnouncements;
+  const filter = kind === 'articles' ? articlesFilter : annFilter;
   if (!grid || !cached) return;
   if (!cached.length) {
     grid.innerHTML = `<p class="news-placeholder">${translations[currentLang].news_empty}</p>`;
   } else {
-    const items = cached.filter(d => matchesFilter(d, newsFilter));
+    const items = cached.filter(d => matchesFilter(d, filter));
     grid.innerHTML = items.length
       ? items.map(d => renderNewsCard(d, kind)).join('')
       : `<p class="filter-empty">${translations[currentLang].filter_empty}</p>`;
@@ -538,8 +526,10 @@ function refreshCarousels() {
 // ===== ΦΙΛΤΡΑ ΗΜΕΡΟΜΗΝΙΑΣ — selects =====
 const actionsMonthSel = document.getElementById('actionsMonthSel');
 const actionsYearSel = document.getElementById('actionsYearSel');
-const newsMonthSel = document.getElementById('newsMonthSel');
-const newsYearSel = document.getElementById('newsYearSel');
+const articlesMonthSel = document.getElementById('articlesMonthSel');
+const articlesYearSel = document.getElementById('articlesYearSel');
+const annMonthSel = document.getElementById('annMonthSel');
+const annYearSel = document.getElementById('annYearSel');
 
 const MONTH_NAMES = {
   el: ['Ιανουάριος', 'Φεβρουάριος', 'Μάρτιος', 'Απρίλιος', 'Μάιος', 'Ιούνιος',
@@ -571,15 +561,19 @@ function populateYearSelect(sel, lists, current) {
 
 function refreshFilterSelects() {
   populateMonthSelect(actionsMonthSel, actionsFilter.month);
-  populateMonthSelect(newsMonthSel, newsFilter.month);
+  populateMonthSelect(articlesMonthSel, articlesFilter.month);
+  populateMonthSelect(annMonthSel, annFilter.month);
   populateYearSelect(actionsYearSel, [cachedActions], actionsFilter.year);
-  populateYearSelect(newsYearSel, [cachedArticles, cachedAnnouncements], newsFilter.year);
+  populateYearSelect(articlesYearSel, [cachedArticles], articlesFilter.year);
+  populateYearSelect(annYearSel, [cachedAnnouncements], annFilter.year);
 }
 
 if (actionsMonthSel) actionsMonthSel.addEventListener('change', () => { actionsFilter.month = actionsMonthSel.value; renderActions(); });
 if (actionsYearSel) actionsYearSel.addEventListener('change', () => { actionsFilter.year = actionsYearSel.value; renderActions(); });
-if (newsMonthSel) newsMonthSel.addEventListener('change', () => { newsFilter.month = newsMonthSel.value; renderNews('articles'); renderNews('announcements'); });
-if (newsYearSel) newsYearSel.addEventListener('change', () => { newsFilter.year = newsYearSel.value; renderNews('articles'); renderNews('announcements'); });
+if (articlesMonthSel) articlesMonthSel.addEventListener('change', () => { articlesFilter.month = articlesMonthSel.value; renderNews('articles'); });
+if (articlesYearSel) articlesYearSel.addEventListener('change', () => { articlesFilter.year = articlesYearSel.value; renderNews('articles'); });
+if (annMonthSel) annMonthSel.addEventListener('change', () => { annFilter.month = annMonthSel.value; renderNews('announcements'); });
+if (annYearSel) annYearSel.addEventListener('change', () => { annFilter.year = annYearSel.value; renderNews('announcements'); });
 
 document.getElementById('lightboxClose').addEventListener('click', () => lightbox.classList.remove('open'));
 lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.classList.remove('open'); });

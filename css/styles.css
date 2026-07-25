@@ -621,7 +621,7 @@ section { padding: 80px 24px; }
 .loading { opacity: 0.6; pointer-events: none; }
 
 /* ===== SCROLL PADDING ===== */
-section[id] { scroll-margin-top: 70px; }
+section[id], span[id="news"] { scroll-margin-top: 70px; }
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {

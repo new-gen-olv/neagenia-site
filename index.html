@@ -76,7 +76,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css?v=20260725f" />
+  <link rel="stylesheet" href="css/styles.css?v=20260725j" />
 </head>
 <body>
 
@@ -89,7 +89,8 @@
   <nav id="desktop-nav">
     <a href="#problem" data-i18n="nav_problem">Το Πρόβλημα</a>
     <a href="#actions" data-i18n="nav_actions">Οι Δράσεις</a>
-    <a href="#news" data-i18n="nav_articles">Άρθρα</a>
+    <a href="#articles" data-i18n="nav_articles">Άρθρα</a>
+    <a href="#announcements" data-i18n="nav_announcements">Ανακοινώσεις</a>
     <a href="#gallery" data-i18n="nav_gallery">Gallery</a>
     <a href="#about" data-i18n="nav_about">Σχετικά</a>
     <a href="#volunteerForm" data-i18n="nav_join">Γίνε μέλος</a>
@@ -109,7 +110,8 @@
 <nav class="mobile-nav" id="mobileNav">
   <a href="#problem" data-i18n="nav_problem">Το Πρόβλημα</a>
   <a href="#actions" data-i18n="nav_actions">Οι Δράσεις</a>
-  <a href="#news" data-i18n="nav_articles">Άρθρα</a>
+  <a href="#articles" data-i18n="nav_articles">Άρθρα</a>
+  <a href="#announcements" data-i18n="nav_announcements">Ανακοινώσεις</a>
   <a href="#gallery" data-i18n="nav_gallery">Gallery</a>
   <a href="#about" data-i18n="nav_about">Σχετικά</a>
   <a href="#volunteerForm" data-i18n="nav_join">Γίνε μέλος</a>
@@ -168,29 +170,38 @@
   </div>
 </section>
 
-<!-- ===== ΑΡΘΡΑ & ΑΝΑΚΟΙΝΩΣΕΙΣ ===== -->
-<section id="news">
+<!-- ===== ΑΡΘΡΑ ===== -->
+<span id="news"></span><!-- anchor συμβατότητας για παλιά links index.html#news -->
+<section id="articles">
   <div class="section-inner">
-    <h2 class="section-title" data-i18n="news_title">Ανακοινώσεις &amp; <span>Άρθρα</span></h2>
+    <h2 class="section-title" data-i18n="articles_sec_title">Τα <span>Άρθρα</span> μας</h2>
     <div class="section-divider"></div>
-    <div class="news-tabs">
-      <button class="tab-btn active" data-tab="announcements" data-i18n="nav_announcements">Ανακοινώσεις</button>
-      <button class="tab-btn" data-tab="articles" data-i18n="nav_articles">Άρθρα</button>
-    </div>
     <div class="date-filter">
-      <select id="newsMonthSel" aria-label="Μήνας"></select>
-      <select id="newsYearSel" aria-label="Έτος"></select>
+      <select id="articlesMonthSel" aria-label="Μήνας"></select>
+      <select id="articlesYearSel" aria-label="Έτος"></select>
     </div>
-    <div class="carousel-wrap" id="announcementsWrap">
+    <div class="carousel-wrap" id="articlesWrap">
       <button type="button" class="carousel-btn prev" aria-label="Προηγούμενα">&#10094;</button>
-      <div id="announcementsGrid" class="news-grid carousel-track">
+      <div id="articlesGrid" class="news-grid carousel-track">
         <div class="spinner"></div>
       </div>
       <button type="button" class="carousel-btn next" aria-label="Επόμενα">&#10095;</button>
     </div>
-    <div class="carousel-wrap hidden" id="articlesWrap">
+  </div>
+</section>
+
+<!-- ===== ΑΝΑΚΟΙΝΩΣΕΙΣ ===== -->
+<section id="announcements">
+  <div class="section-inner">
+    <h2 class="section-title" data-i18n="announcements_sec_title">Οι <span>Ανακοινώσεις</span> μας</h2>
+    <div class="section-divider"></div>
+    <div class="date-filter">
+      <select id="annMonthSel" aria-label="Μήνας"></select>
+      <select id="annYearSel" aria-label="Έτος"></select>
+    </div>
+    <div class="carousel-wrap" id="announcementsWrap">
       <button type="button" class="carousel-btn prev" aria-label="Προηγούμενα">&#10094;</button>
-      <div id="articlesGrid" class="news-grid carousel-track">
+      <div id="announcementsGrid" class="news-grid carousel-track">
         <div class="spinner"></div>
       </div>
       <button type="button" class="carousel-btn next" aria-label="Επόμενα">&#10095;</button>
@@ -439,7 +450,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>emailjs.init('KvW8O4mJRj0oLxARt');</script>
-<script type="module" src="js/public.js?v=20260725"></script>
+<script type="module" src="js/public.js?v=20260725j"></script>
 <script type="module" src="js/traffic.js?v=20260725"></script>
 </body>
 </html>
