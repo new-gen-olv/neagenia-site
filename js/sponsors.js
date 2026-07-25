@@ -97,9 +97,17 @@ function sponsorCard(d) {
   const link = d.website
     ? `<span class="sponsor-visit">${translations[currentLang].sp_visit}</span>`
     : '';
-  // Διεύθυνση (κείμενο) + τηλέφωνο (κλικαμπλ tel:)
+  // Διεύθυνση από τα επιμέρους πεδία: «Οδός Αριθμός, ΤΚ Πόλη, Νομός, Χώρα»
+  // (κρατάμε και το παλιό ενιαίο d.address για συμβατότητα)
+  const addressParts = [
+    [d.street, d.streetNo].filter(Boolean).join(' '),
+    [d.zip, d.city].filter(Boolean).join(' '),
+    d.prefecture,
+    d.country
+  ].filter(Boolean).join(', ');
+  const address = addressParts || d.address || '';
   const contact = [
-    d.address ? `<span class="sponsor-contact">📍 ${d.address}</span>` : '',
+    address ? `<span class="sponsor-contact">📍 ${address}</span>` : '',
     d.phone ? `<a href="tel:${d.phone.replace(/[^+\d]/g, '')}" class="sponsor-contact sponsor-tel">📞 ${d.phone}</a>` : ''
   ].filter(Boolean).join('');
   // Η κάρτα γίνεται clickable μέσω data-url + delegated handler (ΟΧΙ wrapper <a>,
