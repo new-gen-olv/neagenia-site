@@ -310,35 +310,66 @@
           </div>
           <div class="form-group">
             <label>Σταθερό τηλέφωνο (προαιρετικό)</label>
-            <div style="display:flex;gap:6px;">
-              <input type="text" list="phoneCodesList" id="sponsorPhoneCode" value="+30" class="phone-code-select" title="Διάλεξε ή γράψε πρόθεμα χώρας" />
-              <input type="tel" id="sponsorPhone" placeholder="π.χ. 210 1234567" style="flex:1;" />
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <select id="sponsorPhoneCode" class="phone-code-select">
+                <option value="+30" selected>🇬🇷 Ελλάδα (+30)</option>
+                <option value="+357">🇨🇾 Κύπρος (+357)</option>
+                <option value="+39">🇮🇹 Ιταλία (+39)</option>
+                <option value="+33">🇫🇷 Γαλλία (+33)</option>
+                <option value="+44">🇬🇧 Ην. Βασίλειο (+44)</option>
+                <option value="+49">🇩🇪 Γερμανία (+49)</option>
+                <option value="+34">🇪🇸 Ισπανία (+34)</option>
+                <option value="+351">🇵🇹 Πορτογαλία (+351)</option>
+                <option value="+31">🇳🇱 Ολλανδία (+31)</option>
+                <option value="+32">🇧🇪 Βέλγιο (+32)</option>
+                <option value="+41">🇨🇭 Ελβετία (+41)</option>
+                <option value="+43">🇦🇹 Αυστρία (+43)</option>
+                <option value="+46">🇸🇪 Σουηδία (+46)</option>
+                <option value="+45">🇩🇰 Δανία (+45)</option>
+                <option value="+48">🇵🇱 Πολωνία (+48)</option>
+                <option value="+40">🇷🇴 Ρουμανία (+40)</option>
+                <option value="+359">🇧🇬 Βουλγαρία (+359)</option>
+                <option value="+355">🇦🇱 Αλβανία (+355)</option>
+                <option value="+90">🇹🇷 Τουρκία (+90)</option>
+                <option value="+1">🇺🇸 ΗΠΑ / Καναδάς (+1)</option>
+                <option value="+61">🇦🇺 Αυστραλία (+61)</option>
+                <option value="custom">✏️ Άλλο πρόθεμα...</option>
+              </select>
+              <input type="text" id="sponsorPhoneCodeCustom" class="phone-code-select" placeholder="+XXX" style="display:none;" />
+              <input type="tel" id="sponsorPhone" placeholder="π.χ. 210 1234567" style="flex:1;min-width:140px;" />
             </div>
           </div>
           <div class="form-group">
             <label>Κινητό τηλέφωνο (προαιρετικό)</label>
-            <div style="display:flex;gap:6px;">
-              <input type="text" list="phoneCodesList" id="sponsorMobileCode" value="+30" class="phone-code-select" title="Διάλεξε ή γράψε πρόθεμα χώρας" />
-              <input type="tel" id="sponsorMobile" placeholder="π.χ. 69X XXXXXXX" style="flex:1;" />
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <select id="sponsorMobileCode" class="phone-code-select">
+                <option value="+30" selected>🇬🇷 Ελλάδα (+30)</option>
+                <option value="+357">🇨🇾 Κύπρος (+357)</option>
+                <option value="+39">🇮🇹 Ιταλία (+39)</option>
+                <option value="+33">🇫🇷 Γαλλία (+33)</option>
+                <option value="+44">🇬🇧 Ην. Βασίλειο (+44)</option>
+                <option value="+49">🇩🇪 Γερμανία (+49)</option>
+                <option value="+34">🇪🇸 Ισπανία (+34)</option>
+                <option value="+351">🇵🇹 Πορτογαλία (+351)</option>
+                <option value="+31">🇳🇱 Ολλανδία (+31)</option>
+                <option value="+32">🇧🇪 Βέλγιο (+32)</option>
+                <option value="+41">🇨🇭 Ελβετία (+41)</option>
+                <option value="+43">🇦🇹 Αυστρία (+43)</option>
+                <option value="+46">🇸🇪 Σουηδία (+46)</option>
+                <option value="+45">🇩🇰 Δανία (+45)</option>
+                <option value="+48">🇵🇱 Πολωνία (+48)</option>
+                <option value="+40">🇷🇴 Ρουμανία (+40)</option>
+                <option value="+359">🇧🇬 Βουλγαρία (+359)</option>
+                <option value="+355">🇦🇱 Αλβανία (+355)</option>
+                <option value="+90">🇹🇷 Τουρκία (+90)</option>
+                <option value="+1">🇺🇸 ΗΠΑ / Καναδάς (+1)</option>
+                <option value="+61">🇦🇺 Αυστραλία (+61)</option>
+                <option value="custom">✏️ Άλλο πρόθεμα...</option>
+              </select>
+              <input type="text" id="sponsorMobileCodeCustom" class="phone-code-select" placeholder="+XXX" style="display:none;" />
+              <input type="tel" id="sponsorMobile" placeholder="π.χ. 69X XXXXXXX" style="flex:1;min-width:140px;" />
             </div>
           </div>
-          <datalist id="phoneCodesList">
-            <option value="+30">Ελλάδα</option>
-            <option value="+357">Κύπρος</option>
-            <option value="+44">Ηνωμένο Βασίλειο</option>
-            <option value="+49">Γερμανία</option>
-            <option value="+33">Γαλλία</option>
-            <option value="+39">Ιταλία</option>
-            <option value="+31">Ολλανδία</option>
-            <option value="+32">Βέλγιο</option>
-            <option value="+41">Ελβετία</option>
-            <option value="+34">Ισπανία</option>
-            <option value="+351">Πορτογαλία</option>
-            <option value="+43">Αυστρία</option>
-            <option value="+46">Σουηδία</option>
-            <option value="+1">ΗΠΑ / Καναδάς</option>
-            <option value="+61">Αυστραλία</option>
-          </datalist>
           <div class="form-group">
             <label>Οδός (προαιρετικό)</label>
             <input type="text" id="sponsorStreet" placeholder="π.χ. Πλατεία Ολυμπιακού Χωριού" />
@@ -457,6 +488,6 @@
   </main>
 </div>
 
-<script type="module" src="js/admin.js?v=20260725g"></script>
+<script type="module" src="js/admin.js?v=20260725h"></script>
 </body>
 </html>

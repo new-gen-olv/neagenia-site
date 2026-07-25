@@ -898,6 +898,41 @@ async function loadSponsorsAdmin() {
   }));
 }
 
+// ===== Πρόθεμα χώρας τηλεφώνων χορηγού (select + «Άλλο...» με ελεύθερη εισαγωγή) =====
+[['sponsorPhoneCode', 'sponsorPhoneCodeCustom'], ['sponsorMobileCode', 'sponsorMobileCodeCustom']].forEach(([selId, customId]) => {
+  const sel = document.getElementById(selId);
+  const custom = document.getElementById(customId);
+  if (!sel || !custom) return;
+  sel.addEventListener('change', () => {
+    custom.style.display = sel.value === 'custom' ? '' : 'none';
+    if (sel.value === 'custom') custom.focus();
+  });
+});
+
+// Επιστρέφει το πρόθεμα (από τη λίστα ή το custom πεδίο, πάντα μορφή +ψηφία)
+function getPhoneCode(selId, customId) {
+  const sel = document.getElementById(selId);
+  if (sel.value !== 'custom') return sel.value;
+  const digits = document.getElementById(customId).value.trim().replace(/[^\d]/g, '');
+  return digits ? '+' + digits : '';
+}
+
+// Βάζει αποθηκευμένο πρόθεμα στη φόρμα (αν δεν είναι στη λίστα → «Άλλο» + custom πεδίο)
+function setPhoneCode(selId, customId, code) {
+  const sel = document.getElementById(selId);
+  const custom = document.getElementById(customId);
+  const inList = [...sel.options].some(o => o.value === code);
+  if (code && !inList) {
+    sel.value = 'custom';
+    custom.value = code;
+    custom.style.display = '';
+  } else {
+    sel.value = code || '+30';
+    custom.value = '';
+    custom.style.display = 'none';
+  }
+}
+
 async function startEditSponsor(id) {
   const snap = await getDoc(doc(db, 'sponsors', id));
   const s = snap.data();
@@ -908,9 +943,9 @@ async function startEditSponsor(id) {
   document.getElementById('sponsorWebsite').value = s.website || 'https://';
   document.getElementById('sponsorOrder').value = s.order || 10;
   document.getElementById('sponsorPhone').value = s.phone || '';
-  document.getElementById('sponsorPhoneCode').value = s.phoneCode || '+30';
+  setPhoneCode('sponsorPhoneCode', 'sponsorPhoneCodeCustom', s.phoneCode || '+30');
   document.getElementById('sponsorMobile').value = s.mobile || '';
-  document.getElementById('sponsorMobileCode').value = s.mobileCode || '+30';
+  setPhoneCode('sponsorMobileCode', 'sponsorMobileCodeCustom', s.mobileCode || '+30');
   document.getElementById('sponsorStreet').value = s.street || '';
   document.getElementById('sponsorStreetNo').value = s.streetNo || '';
   document.getElementById('sponsorZip').value = s.zip || '';
@@ -933,8 +968,8 @@ document.getElementById('btnCancelSponsor')?.addEventListener('click', () => {
   editingSponsorId = null;
   editingSponsorLogo = '';
   ['sponsorName', 'sponsorDescEl', 'sponsorDescEn', 'sponsorPhone', 'sponsorMobile', 'sponsorStreet', 'sponsorStreetNo', 'sponsorZip', 'sponsorCity', 'sponsorPrefecture', 'sponsorCountry'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('sponsorPhoneCode').value = '+30';
-  document.getElementById('sponsorMobileCode').value = '+30';
+  setPhoneCode('sponsorPhoneCode', 'sponsorPhoneCodeCustom', '+30');
+  setPhoneCode('sponsorMobileCode', 'sponsorMobileCodeCustom', '+30');
   document.getElementById('sponsorWebsite').value = 'https://';
   document.getElementById('sponsorTier').value = 'sponsor';
   document.getElementById('sponsorOrder').value = 10;
@@ -953,15 +988,10 @@ document.getElementById('btnSubmitSponsor')?.addEventListener('click', async () 
   const descEn  = document.getElementById('sponsorDescEn').value.trim();
   let website   = document.getElementById('sponsorWebsite').value.trim();
   const order   = parseInt(document.getElementById('sponsorOrder').value) || 10;
-  // Πρόθεμα χώρας: δεκτό και πληκτρολογημένο — κρατάμε ψηφία και βάζουμε + μπροστά αν λείπει
-  const normCode = v => {
-    const digits = v.trim().replace(/[^\d]/g, '');
-    return digits ? '+' + digits : '';
-  };
   const phone      = document.getElementById('sponsorPhone').value.trim();
-  const phoneCode  = normCode(document.getElementById('sponsorPhoneCode').value);
+  const phoneCode  = getPhoneCode('sponsorPhoneCode', 'sponsorPhoneCodeCustom');
   const mobile     = document.getElementById('sponsorMobile').value.trim();
-  const mobileCode = normCode(document.getElementById('sponsorMobileCode').value);
+  const mobileCode = getPhoneCode('sponsorMobileCode', 'sponsorMobileCodeCustom');
   const street     = document.getElementById('sponsorStreet').value.trim();
   const streetNo   = document.getElementById('sponsorStreetNo').value.trim();
   const zip        = document.getElementById('sponsorZip').value.trim();
