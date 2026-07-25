@@ -908,6 +908,9 @@ async function startEditSponsor(id) {
   document.getElementById('sponsorWebsite').value = s.website || 'https://';
   document.getElementById('sponsorOrder').value = s.order || 10;
   document.getElementById('sponsorPhone').value = s.phone || '';
+  document.getElementById('sponsorPhoneCode').value = s.phoneCode || '+30';
+  document.getElementById('sponsorMobile').value = s.mobile || '';
+  document.getElementById('sponsorMobileCode').value = s.mobileCode || '+30';
   document.getElementById('sponsorStreet').value = s.street || '';
   document.getElementById('sponsorStreetNo').value = s.streetNo || '';
   document.getElementById('sponsorZip').value = s.zip || '';
@@ -929,7 +932,9 @@ async function startEditSponsor(id) {
 document.getElementById('btnCancelSponsor')?.addEventListener('click', () => {
   editingSponsorId = null;
   editingSponsorLogo = '';
-  ['sponsorName', 'sponsorDescEl', 'sponsorDescEn', 'sponsorPhone', 'sponsorStreet', 'sponsorStreetNo', 'sponsorZip', 'sponsorCity', 'sponsorPrefecture', 'sponsorCountry'].forEach(id => document.getElementById(id).value = '');
+  ['sponsorName', 'sponsorDescEl', 'sponsorDescEn', 'sponsorPhone', 'sponsorMobile', 'sponsorStreet', 'sponsorStreetNo', 'sponsorZip', 'sponsorCity', 'sponsorPrefecture', 'sponsorCountry'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('sponsorPhoneCode').value = '+30';
+  document.getElementById('sponsorMobileCode').value = '+30';
   document.getElementById('sponsorWebsite').value = 'https://';
   document.getElementById('sponsorTier').value = 'sponsor';
   document.getElementById('sponsorOrder').value = 10;
@@ -949,6 +954,9 @@ document.getElementById('btnSubmitSponsor')?.addEventListener('click', async () 
   let website   = document.getElementById('sponsorWebsite').value.trim();
   const order   = parseInt(document.getElementById('sponsorOrder').value) || 10;
   const phone      = document.getElementById('sponsorPhone').value.trim();
+  const phoneCode  = document.getElementById('sponsorPhoneCode').value;
+  const mobile     = document.getElementById('sponsorMobile').value.trim();
+  const mobileCode = document.getElementById('sponsorMobileCode').value;
   const street     = document.getElementById('sponsorStreet').value.trim();
   const streetNo   = document.getElementById('sponsorStreetNo').value.trim();
   const zip        = document.getElementById('sponsorZip').value.trim();
@@ -983,7 +991,7 @@ document.getElementById('btnSubmitSponsor')?.addEventListener('click', async () 
       return;
     }
 
-    const payload = { name, tier, descEl, descEn, website, order, logoUrl, phone, street, streetNo, zip, city, prefecture, country };
+    const payload = { name, tier, descEl, descEn, website, order, logoUrl, phone, phoneCode, mobile, mobileCode, street, streetNo, zip, city, prefecture, country };
     if (editingSponsorId) {
       await updateDoc(doc(db, 'sponsors', editingSponsorId), payload);
     } else {

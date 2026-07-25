@@ -872,6 +872,11 @@ section[id] { scroll-margin-top: 70px; }
 .sponsor-card.clickable { cursor: pointer; }
 .sponsor-card.clickable:hover .sponsor-visit { color: var(--primary-dark); }
 .sponsor-contacts { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+.phone-code-select {
+  padding: 10px 6px; border: 1.5px solid #ddd; border-radius: 8px;
+  font-family: var(--font); font-size: 0.85rem; background: var(--white);
+  flex: 0 0 auto; max-width: 110px;
+}
 .sponsor-contact { font-size: 0.82rem; color: #555; }
 a.sponsor-tel { color: var(--blue); font-weight: 600; transition: var(--transition); }
 a.sponsor-tel:hover { color: var(--primary-dark); }

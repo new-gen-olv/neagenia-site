@@ -106,9 +106,15 @@ function sponsorCard(d) {
     d.country
   ].filter(Boolean).join(', ');
   const address = addressParts || d.address || '';
+  // Τηλέφωνα με πρόθεμα χώρας, κλικαμπλ tel:
+  const telLink = (code, num, icon) => {
+    const shown = `${code ? code + ' ' : ''}${num}`;
+    return `<a href="tel:${(code || '') + num.replace(/[^+\d]/g, '')}" class="sponsor-contact sponsor-tel">${icon} ${shown}</a>`;
+  };
   const contact = [
     address ? `<span class="sponsor-contact">📍 ${address}</span>` : '',
-    d.phone ? `<a href="tel:${d.phone.replace(/[^+\d]/g, '')}" class="sponsor-contact sponsor-tel">📞 ${d.phone}</a>` : ''
+    d.phone ? telLink(d.phoneCode, d.phone, '📞') : '',
+    d.mobile ? telLink(d.mobileCode, d.mobile, '📱') : ''
   ].filter(Boolean).join('');
   // Η κάρτα γίνεται clickable μέσω data-url + delegated handler (ΟΧΙ wrapper <a>,
   // ώστε το tel: link να δουλεύει χωρίς nested anchors που σπάνε το grid)
