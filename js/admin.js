@@ -1490,9 +1490,9 @@ function initMaintenance() {
   cb.addEventListener('change', async () => {
     const val = cb.checked;
     const msg = document.getElementById('maintMsg');
-    if (val && !confirm('Να μπει το site σε συντήρηση;
-
-Οι επισκέπτες θα βλέπουν οθόνη συντήρησης. Εσείς θα συνεχίσετε να το βλέπετε κανονικά.')) {
+    const warn = 'Να μπει το site σε συντήρηση; Οι επισκέπτες θα βλέπουν οθόνη '
+               + 'συντήρησης. Εσείς θα συνεχίσετε να το βλέπετε κανονικά.';
+    if (val && !confirm(warn)) {
       paint(false);
       return;
     }
