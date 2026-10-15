@@ -73,6 +73,7 @@ function initTabs() {
   document.querySelectorAll('[data-panel]').forEach(el => {
     el.addEventListener('click', () => switchTo(el.dataset.panel));
   });
+  initMaintenance();
 }
 
 // ===== BADGES / ΑΔΙΑΒΑΣΤΑ =====
@@ -1462,4 +1463,51 @@ async function loadTopArticles() {
     console.warn('[topArticles]', e);
     tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#888;">Δεν ήταν δυνατή η φόρτωση.</td></tr>';
   }
+}
+
+
+// ===== ΣΥΝΤΗΡΗΣΗ SITE (settings/maintenance) =====
+// Δικο της εγγραφο, ωστε ενα λαθος εδω να μην αγγιζει τιποτε αλλο.
+// Το js/maintenance.js στις δημοσιες σελιδες ακουει αυτο το εγγραφο και
+// ανεβαζει την οθονη συντηρησης αμεσως, χωρις ανεβασμα αρχειων.
+function initMaintenance() {
+  const cb = document.getElementById('togMaintenance');
+  if (!cb) return;
+  const ref = doc(db, 'settings', 'maintenance');
+
+  const paint = on => {
+    cb.checked = !!on;
+    const st = document.getElementById('maintState');
+    if (st) st.textContent = on ? 'ON' : 'OFF';
+    const badge = document.getElementById('maintBadge');
+    if (badge) badge.style.display = on ? '' : 'none';
+  };
+
+  getDoc(ref)
+    .then(snap => paint(snap.exists() && snap.data().on === true))
+    .catch(() => paint(false));
+
+  cb.addEventListener('change', async () => {
+    const val = cb.checked;
+    const msg = document.getElementById('maintMsg');
+    if (val && !confirm('Να μπει το site σε συντήρηση;
+
+Οι επισκέπτες θα βλέπουν οθόνη συντήρησης. Εσείς θα συνεχίσετε να το βλέπετε κανονικά.')) {
+      paint(false);
+      return;
+    }
+    try {
+      await setDoc(ref, { on: val, changedAt: new Date().toISOString() }, { merge: true });
+      paint(val);
+      if (msg) {
+        msg.textContent = val
+          ? 'Το site μπήκε σε συντήρηση.'
+          : 'Η συντήρηση τελείωσε, το site είναι ανοιχτό.';
+        msg.style.color = val ? '#E04A3F' : '#4CAF50';
+      }
+    } catch (e) {
+      paint(!val);
+      if (msg) { msg.textContent = 'Σφάλμα: ' + e.message; msg.style.color = '#E04A3F'; }
+    }
+  });
 }

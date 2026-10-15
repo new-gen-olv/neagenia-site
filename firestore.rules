@@ -58,7 +58,8 @@ service cloud.firestore {
       allow update: if isAdmin()
                     || (isAuthor()
                         && resource.data.authorUid == request.auth.uid
-                        && !('status' in request.resource.data.diff(resource.data).affectedKeys().intersection(['status']))
+                        // Ο συντακτης δεν αλλαζει μονος του το status: δημοσιευει ο admin.
+                        && !('status' in request.resource.data.diff(resource.data).affectedKeys())
                         )
                     // Δημόσιος μετρητής προβολών (js/traffic.js): ΜΟΝΟ το viewCount,
                     // ΜΟΝΟ αύξηση, ΜΟΝΟ σε δημοσιευμένα άρθρα.
@@ -124,7 +125,8 @@ service cloud.firestore {
       allow update: if isAdmin()
                     || (isAuthor()
                         && resource.data.authorUid == request.auth.uid
-                        && !('status' in request.resource.data.diff(resource.data).affectedKeys().intersection(['status']))
+                        // Ο συντακτης δεν αλλαζει μονος του το status: δημοσιευει ο admin.
+                        && !('status' in request.resource.data.diff(resource.data).affectedKeys())
                         )
                     // Δημόσιος μετρητής προβολών (js/traffic.js): ΜΟΝΟ το viewCount,
                     // ΜΟΝΟ αύξηση, ΜΟΝΟ σε δημοσιευμένες δράσεις.
@@ -138,14 +140,51 @@ service cloud.firestore {
     }
 
     // ===== CONTACT MESSAGES =====
+    // Οριa σχηματος και μεγεθους: χωρις αυτα, οποιοσδηποτε γραφει εγγραφα
+    // του 1MB απευθειας στη βαση, χωρις να ανοιξει καν το site, και φουσκωνει
+    // το κοστος και τη λιστα μηνυματων.
     match /contactMessages/{docId} {
-      allow create: if true;
+      // Εδω γραφουν ΔΥΟ φορμες: η επικοινωνια της αρχικης (name/email/message)
+      // και το «θελεις να γινεις χορηγος;» της sponsors.html, που στελνει
+      // επιπλεον type/company/phone. Αν λειπουν απο τη λιστα, η φορμα χορηγων
+      // σπαει σιωπηλα.
+      allow create: if request.resource.data.keys()
+                         .hasOnly(['name', 'email', 'message', 'createdAt', 'read',
+                                   'type', 'company', 'phone'])
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() > 0
+                    && request.resource.data.name.size() <= 100
+                    && request.resource.data.email is string
+                    && request.resource.data.email.size() <= 254
+                    && request.resource.data.message is string
+                    && request.resource.data.message.size() > 0
+                    && request.resource.data.message.size() <= 3000
+                    && request.resource.data.get('type', '') is string
+                    && request.resource.data.get('type', '').size() <= 20
+                    && request.resource.data.get('company', '') is string
+                    && request.resource.data.get('company', '').size() <= 150
+                    && request.resource.data.get('phone', '') is string
+                    && request.resource.data.get('phone', '').size() <= 40;
       allow read, update, delete: if isAdmin();
     }
 
     // ===== VOLUNTEERS =====
     match /volunteers/{docId} {
-      allow create: if true;
+      allow create: if request.resource.data.keys()
+                         .hasOnly(['name', 'email', 'phone', 'interests',
+                                   'message', 'createdAt', 'read'])
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() > 0
+                    && request.resource.data.name.size() <= 100
+                    && request.resource.data.email is string
+                    && request.resource.data.email.size() <= 254
+                    && request.resource.data.get('phone', '') is string
+                    && request.resource.data.get('phone', '').size() <= 40
+                    && (!('interests' in request.resource.data)
+                        || (request.resource.data.interests is list
+                            && request.resource.data.interests.size() <= 20))
+                    && request.resource.data.get('message', '') is string
+                    && request.resource.data.get('message', '').size() <= 3000;
       allow read, update, delete: if isAdmin();
     }
 
@@ -164,19 +203,44 @@ service cloud.firestore {
         return request.resource.data.keys()
                  .hasOnly(['totalViews', 'uniqueVisitors', 'pageBreakdown', 'lastUpdated'])
                && request.resource.data.totalViews is int
+               && request.resource.data.totalViews >= 0
                && (!('uniqueVisitors' in request.resource.data)
-                   || request.resource.data.uniqueVisitors is int)
+                   || (request.resource.data.uniqueVisitors is int
+                       && request.resource.data.uniqueVisitors >= 0))
+               // Οριο κλειδιων στον χαρτη σελιδων. Χωρις αυτο, οποιοσδηποτε
+               // προσθετει ψευτικα κλειδια μεχρι να φτασει το εγγραφο το οριο
+               // του 1MB και να σπασουν τα στατιστικα ολης της ημερας.
                && (!('pageBreakdown' in request.resource.data)
-                   || request.resource.data.pageBreakdown is map);
+                   || (request.resource.data.pageBreakdown is map
+                       && request.resource.data.pageBreakdown.keys().size() <= 300));
       }
+
+      // Καθε εγγραφη μετραει ΤΟ ΠΟΛΥ μια προβολη και εναν επισκεπτη, ακριβως
+      // οπως κανει το traffic.js με increment(1). Χωρις αυτο, το ">=" επετρεπε
+      // σε οποιονδηποτε να γραψει 999999 προβολες με μια κληση: δεν μπορουσε να
+      // μηδενισει τα στατιστικα, μπορουσε ομως να τα κανει αχρηστα.
+      function stepOk(field) {
+        return request.resource.data.get(field, 0) >= resource.data.get(field, 0)
+               && request.resource.data.get(field, 0) <= resource.data.get(field, 0) + 1;
+      }
+
       allow read, delete: if isAdmin();
       allow create: if day.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
-                    && trafficDocValid();
+                    && trafficDocValid()
+                    && request.resource.data.totalViews <= 1
+                    && request.resource.data.get('uniqueVisitors', 0) <= 1;
       allow update: if day.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
                     && trafficDocValid()
-                    && request.resource.data.totalViews >= resource.data.get('totalViews', 0)
-                    && request.resource.data.get('uniqueVisitors', 0)
-                       >= resource.data.get('uniqueVisitors', 0);
+                    && stepOk('totalViews')
+                    && stepOk('uniqueVisitors');
+    }
+
+    // ===== ΡΥΘΜΙΣΕΙΣ ΣΙΤΕ =====
+    // Δημοσια αναγνωσιμες: τις διαβαζει καθε σελιδα για να ξερει αν ειναι
+    // ενεργη η λειτουργια συντηρησης. Τις γραφει μονο ο διαχειριστης.
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     // ===== NEWSLETTER =====
@@ -184,8 +248,13 @@ service cloud.firestore {
     // Δεν επιτρέπεται update: έτσι η διπλοεγγραφή απορρίπτεται
     // και κανείς δεν μπορεί να πειράξει υπάρχουσα εγγραφή.
     match /newsletter/{email} {
-      allow create: if request.resource.data.email is string
-                    && request.resource.data.email == email;
+      allow create: if request.resource.data.keys()
+                         .hasOnly(['email', 'lang', 'createdAt'])
+                    && request.resource.data.email is string
+                    && request.resource.data.email == email
+                    && email.size() <= 254
+                    && request.resource.data.get('lang', '') is string
+                    && request.resource.data.get('lang', '').size() <= 5;
       allow read, update, delete: if isAdmin();
     }
   }
